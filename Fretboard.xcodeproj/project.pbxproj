@@ -7,15 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		54FFB81EB187C90A4697E4CE /* Pods_Fretboard_Mac.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1201E97A1BFC22433BCEFD99 /* Pods_Fretboard_Mac.framework */; };
+		63A4C0041406815370581157 /* Pods_Fretboard_TV.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC60E010DE4E853821A20DBB /* Pods_Fretboard_TV.framework */; };
 		B22BFC461E9A930A005130EE /* Fretboard.h in Headers */ = {isa = PBXBuildFile; fileRef = B22BFC411E9A9304005130EE /* Fretboard.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B22BFC471E9A930B005130EE /* Fretboard.h in Headers */ = {isa = PBXBuildFile; fileRef = B22BFC411E9A9304005130EE /* Fretboard.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B22BFC491E9A9329005130EE /* Fretboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B22BFC481E9A9329005130EE /* Fretboard.swift */; };
 		B22BFC4A1E9A939E005130EE /* Fretboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B22BFC481E9A9329005130EE /* Fretboard.swift */; };
 		B22BFC4B1E9A939F005130EE /* Fretboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B22BFC481E9A9329005130EE /* Fretboard.swift */; };
 		B22BFC4C1E9A93C1005130EE /* Fretboard.h in Headers */ = {isa = PBXBuildFile; fileRef = B22BFC411E9A9304005130EE /* Fretboard.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D2F29B65DEB509111D543C9E /* Pods_Fretboard_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4EE1048B0E93B04B96E13499 /* Pods_Fretboard_iOS.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		04BCEA3C9DBCFE5B727FEF3C /* Pods-Fretboard iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Fretboard iOS.release.xcconfig"; path = "Pods/Target Support Files/Pods-Fretboard iOS/Pods-Fretboard iOS.release.xcconfig"; sourceTree = "<group>"; };
+		1201E97A1BFC22433BCEFD99 /* Pods_Fretboard_Mac.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Fretboard_Mac.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2CD27C524B97700EE63BDFB9 /* Pods-Fretboard TV.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Fretboard TV.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Fretboard TV/Pods-Fretboard TV.debug.xcconfig"; sourceTree = "<group>"; };
+		4EE1048B0E93B04B96E13499 /* Pods_Fretboard_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Fretboard_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7353E75FC0629D8AF273641D /* Pods-Fretboard TV.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Fretboard TV.release.xcconfig"; path = "Pods/Target Support Files/Pods-Fretboard TV/Pods-Fretboard TV.release.xcconfig"; sourceTree = "<group>"; };
+		95E0E4316A2BDFC2C7F04E06 /* Pods-Fretboard Mac.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Fretboard Mac.release.xcconfig"; path = "Pods/Target Support Files/Pods-Fretboard Mac/Pods-Fretboard Mac.release.xcconfig"; sourceTree = "<group>"; };
+		AC60E010DE4E853821A20DBB /* Pods_Fretboard_TV.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Fretboard_TV.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B22BFC1D1E9A927D005130EE /* Fretboard.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Fretboard.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B22BFC2B1E9A9290005130EE /* Fretboard.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Fretboard.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B22BFC381E9A929A005130EE /* Fretboard.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Fretboard.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -24,6 +34,8 @@
 		B22BFC431E9A9304005130EE /* Info Mac.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info Mac.plist"; sourceTree = "<group>"; };
 		B22BFC441E9A9304005130EE /* Info TV.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info TV.plist"; sourceTree = "<group>"; };
 		B22BFC481E9A9329005130EE /* Fretboard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Fretboard.swift; sourceTree = "<group>"; };
+		E748F94FF476312C5D3E7B51 /* Pods-Fretboard iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Fretboard iOS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Fretboard iOS/Pods-Fretboard iOS.debug.xcconfig"; sourceTree = "<group>"; };
+		E80EF1F59674FDFE42E9ECBA /* Pods-Fretboard Mac.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Fretboard Mac.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Fretboard Mac/Pods-Fretboard Mac.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,6 +43,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2F29B65DEB509111D543C9E /* Pods_Fretboard_iOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -38,6 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				63A4C0041406815370581157 /* Pods_Fretboard_TV.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,17 +59,43 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				54FFB81EB187C90A4697E4CE /* Pods_Fretboard_Mac.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		18025C100CEE071B94335B86 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				E80EF1F59674FDFE42E9ECBA /* Pods-Fretboard Mac.debug.xcconfig */,
+				95E0E4316A2BDFC2C7F04E06 /* Pods-Fretboard Mac.release.xcconfig */,
+				2CD27C524B97700EE63BDFB9 /* Pods-Fretboard TV.debug.xcconfig */,
+				7353E75FC0629D8AF273641D /* Pods-Fretboard TV.release.xcconfig */,
+				E748F94FF476312C5D3E7B51 /* Pods-Fretboard iOS.debug.xcconfig */,
+				04BCEA3C9DBCFE5B727FEF3C /* Pods-Fretboard iOS.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		8F6770BB6463EBC1C5D0EA3E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1201E97A1BFC22433BCEFD99 /* Pods_Fretboard_Mac.framework */,
+				AC60E010DE4E853821A20DBB /* Pods_Fretboard_TV.framework */,
+				4EE1048B0E93B04B96E13499 /* Pods_Fretboard_iOS.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		B22BFC111E9A9269005130EE = {
 			isa = PBXGroup;
 			children = (
 				B22BFC401E9A9304005130EE /* Source */,
 				B22BFC1E1E9A927D005130EE /* Products */,
+				18025C100CEE071B94335B86 /* Pods */,
+				8F6770BB6463EBC1C5D0EA3E /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -115,10 +155,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B22BFC231E9A927D005130EE /* Build configuration list for PBXNativeTarget "Fretboard iOS" */;
 			buildPhases = (
+				71A9C0DD7816BF026356097E /* [CP] Check Pods Manifest.lock */,
 				B22BFC181E9A927D005130EE /* Sources */,
 				B22BFC191E9A927D005130EE /* Frameworks */,
 				B22BFC1A1E9A927D005130EE /* Headers */,
 				B22BFC1B1E9A927D005130EE /* Resources */,
+				BFB353C01AD5E7DCDE0686FF /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -133,10 +175,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B22BFC301E9A9290005130EE /* Build configuration list for PBXNativeTarget "Fretboard TV" */;
 			buildPhases = (
+				FD49DEB51B4EB6404A2D9B18 /* [CP] Check Pods Manifest.lock */,
 				B22BFC261E9A9290005130EE /* Sources */,
 				B22BFC271E9A9290005130EE /* Frameworks */,
 				B22BFC281E9A9290005130EE /* Headers */,
 				B22BFC291E9A9290005130EE /* Resources */,
+				1368A35EA246A6FC7BCC51DB /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -151,10 +195,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B22BFC3D1E9A929A005130EE /* Build configuration list for PBXNativeTarget "Fretboard Mac" */;
 			buildPhases = (
+				857DAB288BE91F7FD4D886C9 /* [CP] Check Pods Manifest.lock */,
 				B22BFC331E9A929A005130EE /* Sources */,
 				B22BFC341E9A929A005130EE /* Frameworks */,
 				B22BFC351E9A929A005130EE /* Headers */,
 				B22BFC361E9A929A005130EE /* Resources */,
+				B4AB68BD089475A65C65B631 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -234,6 +280,99 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		1368A35EA246A6FC7BCC51DB /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Fretboard TV/Pods-Fretboard TV-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		71A9C0DD7816BF026356097E /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		857DAB288BE91F7FD4D886C9 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		B4AB68BD089475A65C65B631 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Fretboard Mac/Pods-Fretboard Mac-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		BFB353C01AD5E7DCDE0686FF /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Fretboard iOS/Pods-Fretboard iOS-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		FD49DEB51B4EB6404A2D9B18 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		B22BFC181E9A927D005130EE /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -276,6 +415,7 @@
 		};
 		B22BFC241E9A927D005130EE /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E748F94FF476312C5D3E7B51 /* Pods-Fretboard iOS.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -343,6 +483,7 @@
 		};
 		B22BFC251E9A927D005130EE /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 04BCEA3C9DBCFE5B727FEF3C /* Pods-Fretboard iOS.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -403,6 +544,7 @@
 		};
 		B22BFC311E9A9290005130EE /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2CD27C524B97700EE63BDFB9 /* Pods-Fretboard TV.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -469,6 +611,7 @@
 		};
 		B22BFC321E9A9290005130EE /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7353E75FC0629D8AF273641D /* Pods-Fretboard TV.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -528,6 +671,7 @@
 		};
 		B22BFC3E1E9A929A005130EE /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E80EF1F59674FDFE42E9ECBA /* Pods-Fretboard Mac.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -595,6 +739,7 @@
 		};
 		B22BFC3F1E9A929A005130EE /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 95E0E4316A2BDFC2C7F04E06 /* Pods-Fretboard Mac.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;

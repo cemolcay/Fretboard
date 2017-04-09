@@ -11,6 +11,7 @@
 #elseif os(OSX)
   import AppKit
 #endif
+import MusicTheorySwift
 
 #if os(iOS) || os(tvOS)
   typealias FRView = UIView

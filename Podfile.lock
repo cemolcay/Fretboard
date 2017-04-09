@@ -1,0 +1,12 @@
+PODS:
+  - MusicTheorySwift (0.0.4)
+
+DEPENDENCIES:
+  - MusicTheorySwift
+
+SPEC CHECKSUMS:
+  MusicTheorySwift: 213563918695d0a2fa37a805a0ad63b090a12bfe
+
+PODFILE CHECKSUM: 16e7fb0c07eb67708b5dc3e293e7a94160368a8c
+
+COCOAPODS: 1.2.1.beta.1
