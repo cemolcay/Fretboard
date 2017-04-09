@@ -174,9 +174,63 @@ public class Fretboard {
 
 // MARK: - FretboardView
 
+internal class FretboardNoteView: FRView {
+  var note: FretboardNote
+
+  // MARK: Init
+
+  public init(frame: CGRect, note: FretboardNote) {
+    self.note = note
+    super.init(frame: frame)
+
+    #if os(OSX)
+      wantsLayer = true
+    #endif
+  }
+  
+  required public init?(coder: NSCoder) {
+    note = FretboardNote(note: Note(midiNote: 0))
+    super.init(coder: coder)
+  }
+
+  // MARK: Draw
+
+  #if os(iOS) || os(tvOS)
+    public override func draw(_ rect: CGRect) {
+      super.draw(rect)
+      draw()
+    }
+  #elseif os(OSX)
+    public override func draw(_ dirtyRect: NSRect) {
+      super.draw(dirtyRect)
+      draw()
+    }
+  #endif
+
+  private func draw() {
+    #if os(OSX)
+      guard let layer = layer else { return }
+    #endif
+
+    layer.borderWidth = 1
+    layer.borderColor = FRColor.black.cgColor
+
+    let textLayer = CATextLayer()
+    textLayer.frame = layer.bounds
+    textLayer.alignmentMode = kCAAlignmentCenter
+    textLayer.string = NSAttributedString(
+      string: "\(note.note)",
+      attributes: [
+        NSForegroundColorAttributeName: note.isSelected ? FRColor.red.cgColor : FRColor.black.cgColor,
+        NSFontAttributeName: FRFont.systemFont(ofSize: 15)
+      ])
+    layer.addSublayer(textLayer)
+  }
+}
+
 @IBDesignable
 public class FretboardView: FRView {
-  var fretboard = Fretboard() { didSet { redraw() }}
+  public var fretboard = Fretboard() { didSet { redraw() }}
 
   @IBInspectable var isDrawNoteName: Bool = true { didSet { redraw() }}
   @IBInspectable var isDrawFretNumber: Bool = true { didSet { redraw() }}
@@ -219,7 +273,7 @@ public class FretboardView: FRView {
     // Setup content view
     if contentView == nil {
       contentView = FRView()
-      contentView?.frame = frame
+      contentView?.frame = bounds
       addSubview(contentView!)
 
       #if os(OSX)
@@ -244,7 +298,7 @@ public class FretboardView: FRView {
     // Draw layer
     let fretSize = CGSize(
       width: (fretboard.direction == .horizontal ? frame.size.width : frame.size.height) / CGFloat(fretboard.count),
-      height: (fretboard.direction == .horizontal ? frame.size.height : frame.size.width) / CGFloat(fretboard.count))
+      height: (fretboard.direction == .horizontal ? frame.size.height : frame.size.width) / CGFloat(fretboard.tuning.strings.count))
 
     for (stringIndex, string) in fretboard.notes.enumerated() {
       for (fretIndex, fret) in string.enumerated() {
@@ -253,29 +307,34 @@ public class FretboardView: FRView {
         switch fretboard.direction {
         case .horizontal:
           #if os(iOS) || os(tvOS)
-            position.x = 0
-            position.y = 0
+            position.x = fretSize.width * CGFloat(fretIndex)
+            position.y = fretSize.height * CGFloat(stringIndex)
           #elseif os(OSX)
-            position.x = 0
-            position.y = 0
+            position.x = fretSize.width * CGFloat(fretIndex)
+            position.y = frame.size.height - fretSize.height - (fretSize.height * CGFloat(stringIndex))
           #endif
         case .vertical:
           #if os(iOS) || os(tvOS)
-            position.x = 0
-            position.y = 0
+            position.x = fretSize.width * CGFloat(stringIndex)
+            position.y = fretSize.height * CGFloat(fretIndex)
           #elseif os(OSX)
-            position.x = 0
-            position.y = 0
+            position.x = fretSize.width * CGFloat(stringIndex)
+            position.y = frame.size.height - fretSize.height - (fretSize.height * CGFloat(fretIndex))
           #endif
         }
 
         // View
+        let fretView = FretboardNoteView(
+          frame: CGRect(origin: position, size: fretSize),
+          note: fret)
+        contentView.addSubview(fretView)
+
         #if os(iOS) || os(tvOS)
-          let fretView = FRView(frame: CGRect(origin: position, size: fretSize))
+          fretView.setNeedsDisplay()
         #elseif os(OSX)
-          let fretView = FRView(frame: NSRect(origin: position, size: fretSize))
+          fretView.needsDisplay = true
         #endif
-        addSubview(fretView)
+
       }
     }
   }

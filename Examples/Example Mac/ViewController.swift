@@ -8,23 +8,15 @@
 
 import Cocoa
 import Fretboard
+import MusicTheorySwift
 
 class ViewController: NSViewController {
-  var fretboard = Fretboard()
+  @IBOutlet weak var fretboardView: FretboardView?
 
   override func viewDidLoad() {
     super.viewDidLoad()
-
-    fretboard.count = 21
-    let notes = fretboard.notes
-    var strings = ""
-    for string in notes {
-      var row = ""
-      for note in string {
-        row += "\(note.note)\t"
-      }
-      strings += "\(row)\n"
-    }
-    print(strings)
+    view.wantsLayer = true
+    view.layer = CALayer()
+    fretboardView?.fretboard.select(scale: Scale(type: .major, key: .c))
   }
 }
