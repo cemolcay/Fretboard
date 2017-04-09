@@ -7,21 +7,24 @@
 //
 
 import Cocoa
+import Fretboard
 
 class ViewController: NSViewController {
+  var fretboard = Fretboard()
 
   override func viewDidLoad() {
     super.viewDidLoad()
 
-    // Do any additional setup after loading the view.
-  }
-
-  override var representedObject: Any? {
-    didSet {
-    // Update the view, if already loaded.
+    fretboard.count = 21
+    let notes = fretboard.notes
+    var strings = ""
+    for string in notes {
+      var row = ""
+      for note in string {
+        row += "\(note.note)\t"
+      }
+      strings += "\(row)\n"
     }
+    print(strings)
   }
-
-
 }
-
