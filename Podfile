@@ -15,3 +15,18 @@ target 'Fretboard TV' do
   use_frameworks!
   pod 'MusicTheorySwift'
 end
+
+target 'Example iOS' do
+  use_frameworks!
+  pod 'Fretboard', :path => '.'
+end
+
+target 'Example Mac' do
+  use_frameworks!
+  pod 'Fretboard', :path => '.'
+end
+
+target 'Example TV' do
+  use_frameworks!
+  pod 'Fretboard', :path => '.'
+end
