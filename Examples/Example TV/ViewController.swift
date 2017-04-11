@@ -7,19 +7,23 @@
 //
 
 import UIKit
+import Fretboard
+import MusicTheorySwift
 
 class ViewController: UIViewController {
+  @IBOutlet weak var verticalFretboard: FretboardView?
+  @IBOutlet weak var horizontalFretboard: FretboardView?
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    // Do any additional setup after loading the view, typically from a nib.
+
+    let chord = Chord(type: .maj, key: .a)
+    let firstPosition = chord.notes(octaves: [2, 3, 4])
+
+    verticalFretboard?.fretboard.direction = .vertical
+    verticalFretboard?.fretboard.select(notes: firstPosition)
+
+    horizontalFretboard?.fretboard.direction = .horizontal
+    horizontalFretboard?.fretboard.select(notes: firstPosition)
   }
-
-  override func didReceiveMemoryWarning() {
-    super.didReceiveMemoryWarning()
-    // Dispose of any resources that can be recreated.
-  }
-
-
 }
-

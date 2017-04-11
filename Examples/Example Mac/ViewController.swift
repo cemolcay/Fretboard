@@ -8,23 +8,17 @@
 
 import Cocoa
 import Fretboard
+import MusicTheorySwift
 
 class ViewController: NSViewController {
-  var fretboard = Fretboard()
+  @IBOutlet weak var fretboardView: FretboardView?
 
   override func viewDidLoad() {
     super.viewDidLoad()
 
-    fretboard.count = 21
-    let notes = fretboard.notes
-    var strings = ""
-    for string in notes {
-      var row = ""
-      for note in string {
-        row += "\(note.note)\t"
-      }
-      strings += "\(row)\n"
-    }
-    print(strings)
+    let chord = Chord(type: .maj, key: .a)
+    let firstPosition = chord.notes(octaves: fretboardView?.fretboard.octaves ?? [2, 3, 4])
+    fretboardView?.fretboard.direction = .horizontal
+    fretboardView?.fretboard.select(notes: firstPosition)
   }
 }
