@@ -2,7 +2,6 @@
 <document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="12118" systemVersion="16E195" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12118"/>
-        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -687,15 +686,13 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <customView translatesAutoresizingMaskIntoConstraints="NO" id="XPn-Zx-ScS" customClass="FretboardView" customModule="Fretboard">
-                                <rect key="frame" x="20" y="154" width="440" height="96"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" secondItem="XPn-Zx-ScS" secondAttribute="height" multiplier="55:12" id="lum-Eh-MKi"/>
-                                </constraints>
+                                <rect key="frame" x="20" y="20" width="440" height="230"/>
                             </customView>
                         </subviews>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="XPn-Zx-ScS" secondAttribute="trailing" constant="20" id="BvJ-9V-s0w"/>
                             <constraint firstItem="XPn-Zx-ScS" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="20" id="Cag-9r-v5P"/>
+                            <constraint firstAttribute="bottom" secondItem="XPn-Zx-ScS" secondAttribute="bottom" constant="20" id="VmY-Ze-gpU"/>
                             <constraint firstItem="XPn-Zx-ScS" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="20" id="roE-hj-wUT"/>
                         </constraints>
                     </view>

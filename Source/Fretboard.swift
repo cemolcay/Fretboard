@@ -25,6 +25,35 @@ import MusicTheorySwift
   public typealias FRBezierPath = NSBezierPath
 #endif
 
+#if os(OSX)
+  public extension NSBezierPath {
+    public var cgPath: CGPath {
+      let path = CGMutablePath()
+      var points = [CGPoint](repeating: .zero, count: 3)
+
+      for i in 0 ..< self.elementCount {
+        let type = self.element(at: i, associatedPoints: &points)
+        switch type {
+        case .moveToBezierPathElement:
+          path.move(to: points[0])
+        case .lineToBezierPathElement:
+          path.addLine(to: points[0])
+        case .curveToBezierPathElement:
+          path.addCurve(to: points[2], control1: points[0], control2: points[1])
+        case .closePathBezierPathElement:
+          path.closeSubpath()
+        }
+      }
+
+      return path
+    }
+
+    public func addLine(to: CGPoint) {
+      line(to: to)
+    }
+  }
+#endif
+
 // MARK: - Fretboard
 
 /// Describes a note in fretboard.
@@ -243,12 +272,15 @@ public class Fretboard {
   }
 }
 
-// MARK: - FretboardView
+// MARK: - FretView
 
 @IBDesignable
-public class FretboardNoteView: FRView {
-  var note: FretboardNote
-  private var textLayer = CATextLayer()
+public class FretView: FRView {
+  public var note: FretboardNote
+  public var direction: FretboardDirection = .horizontal
+  public var textLayer = CATextLayer()
+  public var stringLayer = CAShapeLayer()
+  public var fretLayer = CAShapeLayer()
 
   // MARK: Init
 
@@ -265,18 +297,6 @@ public class FretboardNoteView: FRView {
   }
 
   // MARK: Lifecycle
-
-//  #if os(iOS) || os(tvOS)
-//    public override func draw(_ rect: CGRect) {
-//      super.draw(rect)
-//      setup()
-//    }
-//  #elseif os(OSX)
-//    public override func draw(_ dirtyRect: NSRect) {
-//      super.draw(dirtyRect)
-//      setup()
-//    }
-//  #endif
 
   #if os(iOS) || os(tvOS)
     public override func layoutSubviews() {
@@ -297,8 +317,8 @@ public class FretboardNoteView: FRView {
       wantsLayer = true
       guard let layer = layer else { return }
     #endif
-    layer.borderWidth = 1
-    layer.borderColor = FRColor.black.cgColor
+    layer.addSublayer(stringLayer)
+    layer.addSublayer(fretLayer)
     layer.addSublayer(textLayer)
   }
 
@@ -308,16 +328,58 @@ public class FretboardNoteView: FRView {
     #if os(OSX)
       guard let layer = layer else { return }
     #endif
+    CATransaction.setDisableActions(true)
+
+    // FretLayer
+    fretLayer.frame = layer.bounds
+    let fretPath = FRBezierPath()
+
+    switch direction {
+    case .horizontal:
+      fretPath.move(to: CGPoint(x: fretLayer.frame.maxX, y: fretLayer.frame.minY))
+      fretPath.addLine(to: CGPoint(x: fretLayer.frame.maxX, y: fretLayer.frame.maxY))
+    case .vertical:
+      #if os(iOS) || os(tvOS)
+        fretPath.move(to: CGPoint(x: fretLayer.frame.minX, y: fretLayer.frame.maxY))
+        fretPath.addLine(to: CGPoint(x: fretLayer.frame.maxX, y: fretLayer.frame.maxY))
+      #elseif os(OSX)
+        fretPath.move(to: CGPoint(x: fretLayer.frame.minX, y: fretLayer.frame.minY))
+        fretPath.addLine(to: CGPoint(x: fretLayer.frame.maxX, y: fretLayer.frame.minY))
+      #endif
+    }
+
+    fretPath.close()
+    fretLayer.path = fretPath.cgPath
+
+    // StringLayer
+    stringLayer.frame = layer.bounds
+    let stringPath = FRBezierPath()
+
+    switch direction {
+    case .horizontal:
+      stringPath.move(to: CGPoint(x: stringLayer.frame.minX, y: stringLayer.frame.midY))
+      stringPath.addLine(to: CGPoint(x: stringLayer.frame.maxX, y: stringLayer.frame.midY))
+    case .vertical:
+      stringPath.move(to: CGPoint(x: stringLayer.frame.midX, y: stringLayer.frame.minY))
+      stringPath.addLine(to: CGPoint(x: stringLayer.frame.midX, y: stringLayer.frame.maxY))
+    }
+
+    stringPath.close()
+    stringLayer.path = stringPath.cgPath
+
+    // Note
     textLayer.frame = layer.bounds
     textLayer.alignmentMode = kCAAlignmentCenter
     textLayer.string = NSAttributedString(
       string: "\(note.note)",
       attributes: [
-        NSForegroundColorAttributeName: note.isSelected ? FRColor.red.cgColor : FRColor.blue.cgColor,
+        NSForegroundColorAttributeName: note.isSelected ? FRColor.red.cgColor : FRColor.black.cgColor,
         NSFontAttributeName: FRFont.systemFont(ofSize: 15)
       ])
   }
 }
+
+// MARK: - FretboardView
 
 @IBDesignable
 public class FretboardView: FRView, FretboardDelegate {
@@ -325,6 +387,8 @@ public class FretboardView: FRView, FretboardDelegate {
 
   @IBInspectable var isDrawNoteName: Bool = true { didSet { redraw() }}
   @IBInspectable var isDrawFretNumber: Bool = true { didSet { redraw() }}
+  @IBInspectable var fretWidth: CGFloat = 4 { didSet { redraw() }}
+  @IBInspectable var stringWidth: CGFloat = 2 { didSet { redraw() }}
 
   #if os(iOS) || os(tvOS)
     @IBInspectable var stringColor: UIColor = .gray { didSet { redraw() }}
@@ -336,7 +400,7 @@ public class FretboardView: FRView, FretboardDelegate {
     @IBInspectable var noteColor: NSColor = .gray { didSet { redraw() }}
   #endif
 
-  private var noteViews: [[FretboardNoteView]] = []
+  private var fretViews: [[FretView]] = []
 
   // MARK: Init
 
@@ -374,13 +438,13 @@ public class FretboardView: FRView, FretboardDelegate {
   // MARK: Setup 
 
   private func setup() {
-    // Clear FretboardNoteViews
-    noteViews.flatMap({ $0 }).forEach({ $0.removeFromSuperview() })
-    noteViews = []
+    // Clear FretViews
+    fretViews.flatMap({ $0 }).forEach({ $0.removeFromSuperview() })
+    fretViews = []
 
     // Create FretboardNoteViews
-    fretboard.notes.forEach{ noteViews.append($0.map{ FretboardNoteView(note: $0) }) }
-    noteViews.flatMap({ $0 }).forEach({ addSubview($0) })
+    fretboard.notes.forEach{ fretViews.append($0.map{ FretView(note: $0) }) }
+    fretViews.flatMap({ $0 }).forEach({ addSubview($0) })
 
     // Set FretboardDelegate
     fretboard.delegate = self
@@ -390,10 +454,10 @@ public class FretboardView: FRView, FretboardDelegate {
 
   private func draw() {
     let fretSize = CGSize(
-      width: (fretboard.direction == .horizontal ? frame.size.width : frame.size.height) / CGFloat(fretboard.count),
-      height: (fretboard.direction == .horizontal ? frame.size.height : frame.size.width) / CGFloat(fretboard.tuning.strings.count))
+      width: frame.size.width / CGFloat(fretboard.direction == .horizontal ? fretboard.count : fretboard.tuning.strings.count),
+      height: frame.size.height / CGFloat(fretboard.direction == .horizontal ? fretboard.tuning.strings.count: fretboard.count))
 
-    for (stringIndex, string) in noteViews.enumerated() {
+    for (stringIndex, string) in fretViews.enumerated() {
       for (fretIndex, fret) in string.enumerated() {
         // Position
         var position = CGPoint()
@@ -416,6 +480,11 @@ public class FretboardView: FRView, FretboardDelegate {
           #endif
         }
 
+        fret.direction = fretboard.direction
+        fret.stringLayer.strokeColor = stringColor.cgColor
+        fret.stringLayer.lineWidth = stringWidth
+        fret.fretLayer.strokeColor = fretColor.cgColor
+        fret.fretLayer.lineWidth = fretWidth
         fret.frame = CGRect(origin: position, size: fretSize)
       }
     }
@@ -440,7 +509,6 @@ public class FretboardView: FRView, FretboardDelegate {
   }
 
   public func fretboad(_ fretboard: Fretboard, didSelectedNotesChange: FretboardNotes) {
-    Swift.print("notes did change")
     redraw()
   }
 }
