@@ -82,6 +82,26 @@ public enum FretboardDirection {
   case vertical
 }
 
+/// Two dimensional `FretboardNote` array that represents note on horizontal fretboard, from top to down strings increasing, from left ro right frets increasing.
+public typealias FretboardNotes = [[FretboardNote]]
+
+/// Informs changes on fretboard.
+public protocol FretboardDelegate: class {
+  /// Informs `FretboardNotes` changes on fretboard.
+  ///
+  /// - Parameters:
+  ///   - fretboard: Changed fretboard.
+  ///   - didNotesChange: New changed notes.
+  func fretboard(_ fretboard: Fretboard, didNotesChange: FretboardNotes)
+
+  /// Informs `FretboardDirection` changes on fretboard.
+  ///
+  /// - Parameters:
+  ///   - fretboard: Changed fretboard.
+  ///   - didDirectionChange: New changed direction.
+  func fretboard(_ fretboard: Fretboard, didDirectionChange: FretboardDirection)
+}
+
 /// Describes a fretboard with tuning and fret count as well as starting fret and direction of view.
 public class Fretboard {
   /// String count and their notes of open state, tuning. Defaults standard tuning.
@@ -94,10 +114,13 @@ public class Fretboard {
   public var count: Int { didSet { notes = getNotes() }}
 
   /// Direction of fretboard view. Defaults horizontal.
-  public var direction: FretboardDirection
+  public var direction: FretboardDirection  { didSet { delegate?.fretboard(self, didDirectionChange: direction) }}
 
   /// Notes on fretboard horizontally. Left to right frets increases, top to down strings increases.
-  public private(set) var notes: [[FretboardNote]]
+  public private(set) var notes: FretboardNotes { didSet { delegate?.fretboard(self, didNotesChange: notes) }}
+
+  /// Optional delegate that informs changes on fretboard.
+  public weak var delegate: FretboardDelegate?
 
   /// Initilizes fretboard with default values.
   public init(
@@ -179,9 +202,9 @@ internal class FretboardNoteView: FRView {
 
   // MARK: Init
 
-  public init(frame: CGRect, note: FretboardNote) {
+  public init(note: FretboardNote) {
     self.note = note
-    super.init(frame: frame)
+    super.init(frame: .zero)
 
     #if os(OSX)
       wantsLayer = true
@@ -221,7 +244,7 @@ internal class FretboardNoteView: FRView {
     textLayer.string = NSAttributedString(
       string: "\(note.note)",
       attributes: [
-        NSForegroundColorAttributeName: note.isSelected ? FRColor.red.cgColor : FRColor.black.cgColor,
+        NSForegroundColorAttributeName: note.isSelected ? FRColor.red.cgColor : FRColor.blue.cgColor,
         NSFontAttributeName: FRFont.systemFont(ofSize: 15)
       ])
     layer.addSublayer(textLayer)
@@ -229,8 +252,8 @@ internal class FretboardNoteView: FRView {
 }
 
 @IBDesignable
-public class FretboardView: FRView {
-  public var fretboard = Fretboard() { didSet { redraw() }}
+public class FretboardView: FRView, FretboardDelegate {
+  public var fretboard = Fretboard()
 
   @IBInspectable var isDrawNoteName: Bool = true { didSet { redraw() }}
   @IBInspectable var isDrawFretNumber: Bool = true { didSet { redraw() }}
@@ -245,62 +268,56 @@ public class FretboardView: FRView {
     @IBInspectable var noteColor: NSColor = .gray { didSet { redraw() }}
   #endif
 
-  private var contentView: FRView?
+  private var noteViews: [[FretboardNoteView]] = []
 
-  // MARK: Draw
+  // MARK: Lifecycle
 
   #if os(iOS) || os(tvOS)
     public override func draw(_ rect: CGRect) {
       super.draw(rect)
-      draw()
+      setupFretboard()
     }
   #elseif os(OSX)
     public override func draw(_ dirtyRect: NSRect) {
       super.draw(dirtyRect)
+      setupFretboard()
+    }
+  #endif
+
+  #if os(iOS) || os(tvOS)
+    public override func layoutSubviews() {
+      super.layoutSubviews()
+      draw()
+    }
+  #elseif os(OSX)
+    public override func layout() {
+      super.layout()
       draw()
     }
   #endif
 
-  private func redraw() {
-    #if os(iOS) || os(tvOS)
-      setNeedsDisplay()
-    #elseif os(OSX)
-      needsDisplay = true
-    #endif
+  // MARK: Setup 
+
+  private func setupFretboard() {
+    fretboard.delegate = self
+
+    // Clear FretboardNoteViews
+    noteViews.flatMap({ $0 }).forEach({ $0.removeFromSuperview() })
+    noteViews = []
+
+    // Create FretboardNoteViews
+    fretboard.notes.forEach{ noteViews.append($0.map{ FretboardNoteView(note: $0) }) }
+    noteViews.flatMap({ $0 }).forEach({ addSubview($0) })
   }
 
+  // MARK: Draw
+
   private func draw() {
-    // Setup content view
-    if contentView == nil {
-      contentView = FRView()
-      contentView?.frame = bounds
-      addSubview(contentView!)
-
-      #if os(OSX)
-        contentView?.wantsLayer = true
-        contentView?.layer = CALayer()
-      #endif
-    }
-
-    guard let contentView = contentView else { return }
-
-    #if os(iOS) || os(tvOS)
-      let contentLayer = contentView.layer
-    #elseif os(OSX)
-      guard let contentLayer = contentView.layer else { return }
-    #endif
-
-    // Clear layer
-    for sublayer in contentLayer.sublayers ?? [] {
-      sublayer.removeFromSuperlayer()
-    }
-
-    // Draw layer
     let fretSize = CGSize(
       width: (fretboard.direction == .horizontal ? frame.size.width : frame.size.height) / CGFloat(fretboard.count),
       height: (fretboard.direction == .horizontal ? frame.size.height : frame.size.width) / CGFloat(fretboard.tuning.strings.count))
 
-    for (stringIndex, string) in fretboard.notes.enumerated() {
+    for (stringIndex, string) in noteViews.enumerated() {
       for (fretIndex, fret) in string.enumerated() {
         // Position
         var position = CGPoint()
@@ -323,19 +340,26 @@ public class FretboardView: FRView {
           #endif
         }
 
-        // View
-        let fretView = FretboardNoteView(
-          frame: CGRect(origin: position, size: fretSize),
-          note: fret)
-        contentView.addSubview(fretView)
-
-        #if os(iOS) || os(tvOS)
-          fretView.setNeedsDisplay()
-        #elseif os(OSX)
-          fretView.needsDisplay = true
-        #endif
-
+        fret.frame = CGRect(origin: position, size: fretSize)
       }
     }
+  }
+
+  private func redraw() {
+    #if os(iOS) || os(tvOS)
+      setNeedsLayout()
+    #elseif os(OSX)
+      needsLayout = true
+    #endif
+  }
+
+  // MARK: FretboardDelegate
+
+  public func fretboard(_ fretboard: Fretboard, didNotesChange: FretboardNotes) {
+    setupFretboard()
+  }
+
+  public func fretboard(_ fretboard: Fretboard, didDirectionChange: FretboardDirection) {
+    redraw()
   }
 }
