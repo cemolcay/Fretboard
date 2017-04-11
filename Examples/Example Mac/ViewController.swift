@@ -15,8 +15,11 @@ class ViewController: NSViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    view.wantsLayer = true
-    view.layer = CALayer()
-    fretboardView?.fretboard.select(scale: Scale(type: .major, key: .c))
+
+    let chord = Chord(type: .maj, key: .b)
+    let firstPosition = chord.notes(octaves: 2, 3, 4)
+    print(firstPosition)
+    fretboardView?.fretboard.select(notes: firstPosition)
+//    fretboardView?.fretboard.select(scale: Scale(type: .major, key: .c))
   }
 }
