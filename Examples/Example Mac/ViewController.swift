@@ -17,7 +17,7 @@ class ViewController: NSViewController {
     super.viewDidLoad()
 
     let chord = Chord(type: .maj, key: .e)
-    let firstPosition = chord.notes(octaves: 2, 3, 4)
+    let firstPosition = chord.notes(octaves: fretboardView?.fretboard.octaves ?? [2, 3, 4])
     print(firstPosition)
     fretboardView?.fretboard.select(notes: firstPosition)
 //    fretboardView?.fretboard.select(scale: Scale(type: .major, key: .c))
