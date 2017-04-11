@@ -56,6 +56,13 @@ import MusicTheorySwift
 
 // MARK: - Fretboard
 
+public func ==(left: FretboardNote, right: FretboardNote) -> Bool {
+  return left.note == right.note &&
+    left.stringIndex == right.stringIndex &&
+    left.fretIndex == right.fretIndex &&
+    left.isSelected == right.isSelected
+}
+
 /// Describes a note in fretboard.
 public class FretboardNote {
   /// Note that fretboard has.
@@ -184,7 +191,7 @@ public class Fretboard {
     tuning: FretboardTuning = .standard,
     startIndex: Int = 0,
     count: Int = 5,
-    direction: FretboardDirection = .horizontal) {
+    direction: FretboardDirection = .vertical) {
 
     self.tuning = tuning
     self.startIndex = startIndex
@@ -280,6 +287,14 @@ public class Fretboard {
 
 // MARK: - FretView
 
+public enum FretNoteType {
+  case `default`
+  case capoStart
+  case capo
+  case capoEnd
+  case none
+}
+
 @IBDesignable
 public class FretView: FRView {
 
@@ -294,6 +309,11 @@ public class FretView: FRView {
 
   /// Shape layer that frets draws on.
   public var fretLayer = CAShapeLayer()
+
+  public var noteLayer = CAShapeLayer()
+
+  /// Note drawing style if it is pressed.
+  public var noteType: FretNoteType = .none
 
   // MARK: Init
 
@@ -332,6 +352,7 @@ public class FretView: FRView {
     #endif
     layer.addSublayer(stringLayer)
     layer.addSublayer(fretLayer)
+    layer.addSublayer(noteLayer)
   }
 
   // MARK: Draw
@@ -380,6 +401,152 @@ public class FretView: FRView {
 
     stringPath.close()
     stringLayer.path = stringPath.cgPath
+
+    // NoteLayer
+    noteLayer.removeFromSuperlayer()
+    noteLayer = CAShapeLayer()
+    noteLayer.frame = layer.bounds
+    noteLayer.fillColor = FRColor.black.cgColor
+    layer.addSublayer(noteLayer)
+
+    let noteSize = min(noteLayer.frame.size.width, noteLayer.frame.size.height)
+    var notePath = FRBezierPath()
+
+    switch noteType {
+    case .none:
+      break
+
+    case .capo:
+      switch direction {
+      case .horizontal:
+        #if os(iOS) || os(tvOS)
+          notePath = UIBezierPath(rect: CGRect(
+            x: noteLayer.frame.midX - (noteSize / 2),
+            y: noteLayer.frame.minY,
+            width: noteSize,
+            height: noteLayer.frame.size.height))
+        #elseif os(OSX)
+          notePath.appendRect(CGRect(
+            x: noteLayer.frame.midX - (noteSize / 2),
+            y: noteLayer.frame.minY,
+            width: noteSize,
+            height: noteLayer.frame.size.height))
+        #endif
+      case .vertical:
+        #if os(iOS) || os(tvOS)
+          notePath = UIBezierPath(rect: CGRect(
+            x: noteLayer.frame.minX,
+            y: noteLayer.frame.midY - (noteSize / 2),
+            width: noteLayer.frame.size.width,
+            height: noteSize))
+        #elseif os(OSX)
+          notePath.appendRect(CGRect(
+            x: noteLayer.frame.minX,
+            y: noteLayer.frame.midY - (noteSize / 2),
+            width: noteLayer.frame.size.width,
+            height: noteSize))
+        #endif
+      }
+
+    case .capoEnd:
+      switch direction {
+      case .horizontal:
+        #if os(iOS) || os(tvOS)
+          notePath = UIBezierPath(rect: CGRect(
+            x: noteLayer.frame.midX - (noteSize / 2),
+            y: noteLayer.frame.midY,
+            width: noteSize,
+            height: noteLayer.frame.size.height - (noteSize / 2)))
+        #elseif os(OSX)
+          notePath.appendRect(CGRect(
+            x: noteLayer.frame.midX - (noteSize / 2),
+            y: noteLayer.frame.midY,
+            width: noteSize,
+            height: noteLayer.frame.size.height - (noteSize / 2)))
+        #endif
+      case .vertical:
+        #if os(iOS) || os(tvOS)
+          notePath = UIBezierPath(rect: CGRect(
+            x: noteLayer.frame.minX,
+            y: noteLayer.frame.midY - (noteSize / 2),
+            width: noteLayer.frame.size.width - (noteSize / 2),
+            height: noteSize))
+        #elseif os(OSX)
+          notePath.appendRect(CGRect(
+            x: noteLayer.frame.minX,
+            y: noteLayer.frame.midY - (noteSize / 2),
+            width: noteLayer.frame.size.width - (noteSize / 2),
+            height: noteSize))
+        #endif
+      }
+
+    case .capoStart:
+      switch direction {
+      case .horizontal:
+        #if os(iOS) || os(tvOS)
+          notePath = UIBezierPath(rect: CGRect(
+            x: noteLayer.frame.midX - (noteSize / 2),
+            y: noteLayer.frame.minY,
+            width: noteSize,
+            height: noteLayer.frame.size.height - (noteSize / 2)))
+        #elseif os(OSX)
+          notePath.appendRect(CGRect(
+            x: noteLayer.frame.midX - (noteSize / 2),
+            y: noteLayer.frame.minY,
+            width: noteSize,
+            height: noteLayer.frame.size.height - (noteSize / 2)))
+        #endif
+      case .vertical:
+        #if os(iOS) || os(tvOS)
+          notePath = UIBezierPath(rect: CGRect(
+            x: noteLayer.frame.midX,
+            y: noteLayer.frame.midY - (noteSize / 2),
+            width: noteLayer.frame.size.width - (noteSize / 2),
+            height: noteSize))
+        #elseif os(OSX)
+          notePath.appendRect(CGRect(
+            x: noteLayer.frame.midX,
+            y: noteLayer.frame.midY - (noteSize / 2),
+            width: noteLayer.frame.size.width - (noteSize / 2),
+            height: noteSize))
+        #endif
+      }
+
+    default:
+      switch direction {
+      case .horizontal:
+        #if os(iOS) || os(tvOS)
+          notePath = UIBezierPath(ovalIn: CGRect(
+            x: noteLayer.frame.midX - (noteSize / 2),
+            y: noteLayer.frame.minY,
+            width: noteSize,
+            height: noteSize))
+        #elseif os(OSX)
+          notePath.appendOval(in: CGRect(
+            x: noteLayer.frame.midX - (noteSize / 2),
+            y: noteLayer.frame.minY,
+            width: noteSize,
+            height: noteSize))
+        #endif
+      case .vertical:
+        #if os(iOS) || os(tvOS)
+          notePath = UIBezierPath(ovalIn: CGRect(
+            x: noteLayer.frame.minX,
+            y: noteLayer.frame.midY - (noteSize / 2),
+            width: noteSize,
+            height: noteSize))
+        #elseif os(OSX)
+          notePath.appendOval(in: CGRect(
+            x: noteLayer.frame.minX,
+            y: noteLayer.frame.midY - (noteSize / 2),
+            width: noteSize,
+            height: noteSize))
+        #endif
+      }
+    }
+
+    notePath.close()
+    noteLayer.path = notePath.cgPath
   }
 }
 
@@ -461,7 +628,7 @@ public class FretboardView: FRView, FretboardDelegate {
       width: frame.size.width / CGFloat(fretboard.direction == .horizontal ? fretboard.count : fretboard.tuning.strings.count),
       height: frame.size.height / CGFloat(fretboard.direction == .horizontal ? fretboard.tuning.strings.count: fretboard.count))
 
-    for fret in fretViews {
+    for (index, fret) in fretViews.enumerated() {
       let fretIndex = fret.note.fretIndex
       let stringIndex = fret.note.stringIndex
 
@@ -486,6 +653,34 @@ public class FretboardView: FRView, FretboardDelegate {
         #endif
       }
 
+      // Note type
+      let note = fretboard.notes[index]
+      if note.isSelected {
+        let selectedFrets = fretboard.notes
+          .filter({ $0.fretIndex == fretIndex && $0.isSelected })
+          .sorted(by: { $0.stringIndex < $1.stringIndex })
+
+        if let selectedIndex = selectedFrets.index(where: { $0 == note }),
+          selectedFrets.count > 2 {
+          if let first = selectedFrets.first, fret.note == first  {
+            let isCapo = selectedFrets[selectedIndex.advanced(by: 1)].stringIndex == note.stringIndex + 1
+            fret.noteType = isCapo ? .capoStart : .default
+          } else if let last = selectedFrets.last, fret.note == last {
+            let isCapo = selectedFrets[selectedIndex.advanced(by: -1)].stringIndex == note.stringIndex - 1
+            fret.noteType = isCapo ? .capoEnd : .default
+          } else {
+            let isCapo = selectedFrets[selectedIndex.advanced(by: 1)].stringIndex == note.stringIndex + 1 &&
+              selectedFrets[selectedIndex.advanced(by: -1)].stringIndex == note.stringIndex - 1
+            fret.noteType = isCapo ? .capo : .default
+          }
+        } else {
+          fret.noteType = .default
+        }
+      } else {
+        fret.noteType = .none
+      }
+
+      fret.note = note
       fret.direction = fretboard.direction
       fret.stringLayer.strokeColor = stringColor.cgColor
       fret.stringLayer.lineWidth = stringWidth
