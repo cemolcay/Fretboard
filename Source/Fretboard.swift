@@ -221,7 +221,7 @@ public class Fretboard {
   ///
   /// - Parameter note: To be selected note in fretboard.
   public func select(note: Note) {
-    notes.forEach{ $0.isSelected = $0.note == note }
+    notes.filter({ $0.note == note }).forEach({ $0.isSelected = true })
     delegate?.fretboad(self, didSelectedNotesChange: notes)
   }
 
@@ -229,11 +229,11 @@ public class Fretboard {
   ///
   /// - Parameter notes: Notes to be selected.
   public func select(notes: [Note]) {
-    let hasNote: (Note) -> Bool = { note in
-      return notes.contains(where: { $0 == note })
+    let hasNote: (FretboardNote) -> Bool = { fret in
+      return notes.contains(where: { $0 == fret.note })
     }
 
-    self.notes.forEach{ $0.isSelected = hasNote($0.note) }
+    self.notes.filter(hasNote).forEach({ $0.isSelected = true })
     delegate?.fretboad(self, didSelectedNotesChange: self.notes)
   }
 
@@ -267,7 +267,7 @@ public class Fretboard {
   ///
   /// - Parameter note: To be unselected note in fretboard.
   public func unselect(note: Note) {
-    notes.forEach{ $0.isSelected = $0.note == note && $0.isSelected ? false : $0.isSelected }
+    notes.filter({ $0.note == note }).forEach({ $0.isSelected = false })
     delegate?.fretboad(self, didSelectedNotesChange: notes)
   }
 
@@ -464,7 +464,7 @@ public class FretboardView: FRView, FretboardDelegate {
     for fret in fretViews {
       let fretIndex = fret.note.fretIndex
       let stringIndex = fret.note.stringIndex
-      
+
       // Position
       var position = CGPoint()
       switch fretboard.direction {
