@@ -191,7 +191,7 @@ public class Fretboard {
     tuning: FretboardTuning = .standard,
     startIndex: Int = 0,
     count: Int = 5,
-    direction: FretboardDirection = .vertical) {
+    direction: FretboardDirection = .horizontal) {
 
     self.tuning = tuning
     self.startIndex = startIndex
@@ -448,38 +448,6 @@ public class FretView: FRView {
         #endif
       }
 
-    case .capoEnd:
-      switch direction {
-      case .horizontal:
-        #if os(iOS) || os(tvOS)
-          notePath = UIBezierPath(rect: CGRect(
-            x: noteLayer.frame.midX - (noteSize / 2),
-            y: noteLayer.frame.midY,
-            width: noteSize,
-            height: noteLayer.frame.size.height - (noteSize / 2)))
-        #elseif os(OSX)
-          notePath.appendRect(CGRect(
-            x: noteLayer.frame.midX - (noteSize / 2),
-            y: noteLayer.frame.midY,
-            width: noteSize,
-            height: noteLayer.frame.size.height - (noteSize / 2)))
-        #endif
-      case .vertical:
-        #if os(iOS) || os(tvOS)
-          notePath = UIBezierPath(rect: CGRect(
-            x: noteLayer.frame.minX,
-            y: noteLayer.frame.midY - (noteSize / 2),
-            width: noteLayer.frame.size.width - (noteSize / 2),
-            height: noteSize))
-        #elseif os(OSX)
-          notePath.appendRect(CGRect(
-            x: noteLayer.frame.minX,
-            y: noteLayer.frame.midY - (noteSize / 2),
-            width: noteLayer.frame.size.width - (noteSize / 2),
-            height: noteSize))
-        #endif
-      }
-
     case .capoStart:
       switch direction {
       case .horizontal:
@@ -489,7 +457,18 @@ public class FretView: FRView {
             y: noteLayer.frame.minY,
             width: noteSize,
             height: noteLayer.frame.size.height - (noteSize / 2)))
+          let cap = UIBezierPath(ovalIn: CGRect(
+            x: noteLayer.frame.midX - (noteSize / 2),
+            y: noteLayer.frame.minY,
+            width: noteSize,
+            height: noteSize))
+          notePath.append(cap)
         #elseif os(OSX)
+          notePath.appendOval(in: CGRect(
+            x: noteLayer.frame.midX - (noteSize / 2),
+            y: noteLayer.frame.minY,
+            width: noteSize,
+            height: noteSize))
           notePath.appendRect(CGRect(
             x: noteLayer.frame.midX - (noteSize / 2),
             y: noteLayer.frame.minY,
@@ -503,9 +482,74 @@ public class FretView: FRView {
             y: noteLayer.frame.midY - (noteSize / 2),
             width: noteLayer.frame.size.width - (noteSize / 2),
             height: noteSize))
+          let cap = UIBezierPath(ovalIn: CGRect(
+            x: noteLayer.frame.minX,
+            y: noteLayer.frame.midY - (noteSize / 2),
+            width: noteSize,
+            height: noteSize))
+          notePath.append(cap)
         #elseif os(OSX)
+          notePath.appendOval(in: CGRect(
+            x: noteLayer.frame.minX,
+            y: noteLayer.frame.midY - (noteSize / 2),
+            width: noteSize,
+            height: noteSize))
           notePath.appendRect(CGRect(
             x: noteLayer.frame.midX,
+            y: noteLayer.frame.midY - (noteSize / 2),
+            width: noteLayer.frame.size.width - (noteSize / 2),
+            height: noteSize))
+        #endif
+      }
+
+    case .capoEnd:
+      switch direction {
+      case .horizontal:
+        #if os(iOS) || os(tvOS)
+          notePath = UIBezierPath(rect: CGRect(
+            x: noteLayer.frame.midX - (noteSize / 2),
+            y: noteLayer.frame.midY,
+            width: noteSize,
+            height: noteLayer.frame.size.height - (noteSize / 2)))
+          let cap = UIBezierPath(ovalIn: CGRect(
+            x: noteLayer.frame.midX - (noteSize / 2),
+            y: noteLayer.frame.minY,
+            width: noteSize,
+            height: noteSize))
+          notePath.append(cap)
+        #elseif os(OSX)
+          notePath.appendOval(in: CGRect(
+            x: noteLayer.frame.midX - (noteSize / 2),
+            y: noteLayer.frame.minY,
+            width: noteSize,
+            height: noteSize))
+          notePath.appendRect(CGRect(
+            x: noteLayer.frame.midX - (noteSize / 2),
+            y: noteLayer.frame.midY,
+            width: noteSize,
+            height: noteLayer.frame.size.height - (noteSize / 2)))
+        #endif
+      case .vertical:
+        #if os(iOS) || os(tvOS)
+          notePath = UIBezierPath(rect: CGRect(
+            x: noteLayer.frame.minX,
+            y: noteLayer.frame.midY - (noteSize / 2),
+            width: noteLayer.frame.size.width - (noteSize / 2),
+            height: noteSize))
+          let cap = UIBezierPath(ovalIn: CGRect(
+            x: noteLayer.frame.minX,
+            y: noteLayer.frame.midY - (noteSize / 2),
+            width: noteSize,
+            height: noteSize))
+          notePath.append(cap)
+        #elseif os(OSX)
+          notePath.appendOval(in: CGRect(
+            x: noteLayer.frame.minX,
+            y: noteLayer.frame.midY - (noteSize / 2),
+            width: noteSize,
+            height: noteSize))
+          notePath.appendRect(CGRect(
+            x: noteLayer.frame.minX,
             y: noteLayer.frame.midY - (noteSize / 2),
             width: noteLayer.frame.size.width - (noteSize / 2),
             height: noteSize))
