@@ -102,12 +102,12 @@ public enum FretboardTuning {
     switch self {
     case .standard:
       return [
-        Note(type: .e, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
+        Note(type: .e, octave: 4),
         Note(type: .b, octave: 3),
-        Note(type: .e, octave: 4)
+        Note(type: .g, octave: 3),
+        Note(type: .d, octave: 3),
+        Note(type: .a, octave: 2),
+        Note(type: .e, octave: 2),
       ]
     case .dropD:
       return FretboardTuning.standard.strings.map({ $0 - 1 })
@@ -304,19 +304,23 @@ public class FretView: FRView {
   /// Direction of fretboard.
   public var direction: FretboardDirection = .horizontal
 
+  /// Note drawing style if it is pressed.
+  public var noteType: FretNoteType = .none
+
+  /// Note drawing offset from edges.
+  public var noteOffset: CGFloat = 10
+
+  /// If its 0th fret, than it is an open string, which is not a fret technically but represented as a FretView.
+  public var isOpenString: Bool = false
+
   /// Shape layer that strings draws on.
   public var stringLayer = CAShapeLayer()
 
   /// Shape layer that frets draws on.
   public var fretLayer = CAShapeLayer()
 
+  /// Shape layer that notes draws on.
   public var noteLayer = CAShapeLayer()
-
-  /// Note drawing style if it is pressed.
-  public var noteType: FretNoteType = .none
-
-  /// Note drawing offset from edges.
-  public var noteOffset: CGFloat = 10
 
   // MARK: Init
 
@@ -390,7 +394,7 @@ public class FretView: FRView {
     stringLayer.frame = layer.bounds
     let stringPath = FRBezierPath()
 
-    if note.fretIndex != 0 { // Don't draw strings on fret 0 because it is open string.
+    if !isOpenString { // Don't draw strings on fret 0 because it is open string.
       switch direction {
       case .horizontal:
         stringPath.move(to: CGPoint(x: stringLayer.frame.minX, y: stringLayer.frame.midY))
@@ -583,19 +587,20 @@ public class FretView: FRView {
 public class FretboardView: FRView, FretboardDelegate {
   public var fretboard = Fretboard()
 
-  @IBInspectable var isDrawNoteName: Bool = true { didSet { redraw() }}
-  @IBInspectable var isDrawFretNumber: Bool = true { didSet { redraw() }}
-  @IBInspectable var fretWidth: CGFloat = 4 { didSet { redraw() }}
-  @IBInspectable var stringWidth: CGFloat = 2 { didSet { redraw() }}
+  @IBInspectable public var isDrawNoteName: Bool = true { didSet { redraw() }}
+  @IBInspectable public var isDrawFretNumber: Bool = true { didSet { redraw() }}
+  @IBInspectable public var isChordModeOn: Bool = false { didSet { redraw() }}
+  @IBInspectable public var fretWidth: CGFloat = 4 { didSet { redraw() }}
+  @IBInspectable public var stringWidth: CGFloat = 2 { didSet { redraw() }}
 
   #if os(iOS) || os(tvOS)
-    @IBInspectable var stringColor: UIColor = .gray { didSet { redraw() }}
-    @IBInspectable var fretColor: UIColor = .gray { didSet { redraw() }}
-    @IBInspectable var noteColor: UIColor = .gray { didSet { redraw() }}
+    @IBInspectable public var stringColor: UIColor = .gray { didSet { redraw() }}
+    @IBInspectable public var fretColor: UIColor = .gray { didSet { redraw() }}
+    @IBInspectable public var noteColor: UIColor = .gray { didSet { redraw() }}
   #elseif os(OSX)
-    @IBInspectable var stringColor: NSColor = .gray { didSet { redraw() }}
-    @IBInspectable var fretColor: NSColor = .gray { didSet { redraw() }}
-    @IBInspectable var noteColor: NSColor = .gray { didSet { redraw() }}
+    @IBInspectable public var stringColor: NSColor = .gray { didSet { redraw() }}
+    @IBInspectable public var fretColor: NSColor = .gray { didSet { redraw() }}
+    @IBInspectable public var noteColor: NSColor = .gray { didSet { redraw() }}
   #endif
 
   private var fretViews: [FretView] = []
@@ -690,10 +695,12 @@ public class FretboardView: FRView, FretboardDelegate {
         if let selectedIndex = selectedFrets.index(where: { $0 == note }),
           selectedFrets.count > 2 {
           if let first = selectedFrets.first, fret.note == first  {
-            let isCapo = selectedFrets[selectedIndex.advanced(by: 1)].stringIndex == note.stringIndex + 1
+            let isCapo = selectedFrets[selectedIndex.advanced(by: 1)].stringIndex == note.stringIndex + 1 &&
+              selectedFrets[selectedIndex.advanced(by: 2)].stringIndex == note.stringIndex + 2
             fret.noteType = isCapo ? .capoStart : .default
           } else if let last = selectedFrets.last, fret.note == last {
-            let isCapo = selectedFrets[selectedIndex.advanced(by: -1)].stringIndex == note.stringIndex - 1
+            let isCapo = selectedFrets[selectedIndex.advanced(by: -1)].stringIndex == note.stringIndex - 1 &&
+              selectedFrets[selectedIndex.advanced(by: -2)].stringIndex == note.stringIndex - 2
             fret.noteType = isCapo ? .capoEnd : .default
           } else {
             let isCapo = selectedFrets[selectedIndex.advanced(by: 1)].stringIndex == note.stringIndex + 1 &&
@@ -703,12 +710,26 @@ public class FretboardView: FRView, FretboardDelegate {
         } else {
           fret.noteType = .default
         }
+
+        // Chord mode
+        if isChordModeOn {
+          let selectedNotesOnString = fretboard.notes
+            .filter({ $0.stringIndex == stringIndex && $0.isSelected })
+            .sorted(by: { $0.fretIndex < $1.fretIndex })
+          if selectedNotesOnString.count > 1,
+            selectedNotesOnString
+              .suffix(from: 1)
+              .contains(where: { $0.fretIndex == fretIndex }) {
+            fret.noteType = .none
+          }
+        }
       } else {
         fret.noteType = .none
       }
 
       fret.note = note
       fret.direction = fretboard.direction
+      fret.isOpenString = fretboard.startIndex == 0 && fretIndex == 0
       fret.stringLayer.strokeColor = stringColor.cgColor
       fret.stringLayer.lineWidth = stringWidth
       fret.fretLayer.strokeColor = fretColor.cgColor
