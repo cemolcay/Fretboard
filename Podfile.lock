@@ -1,9 +1,12 @@
 PODS:
+  - CenterTextLayer (0.0.1)
   - Fretboard (0.0.1):
+    - CenterTextLayer
     - MusicTheorySwift
   - MusicTheorySwift (0.0.4)
 
 DEPENDENCIES:
+  - CenterTextLayer
   - Fretboard (from `.`)
   - MusicTheorySwift
 
@@ -12,9 +15,10 @@ EXTERNAL SOURCES:
     :path: "."
 
 SPEC CHECKSUMS:
-  Fretboard: 01f95e1764f4f685e7f17628ecdc940326b654da
+  CenterTextLayer: 8ba737f794769c3bd0e3f28706b9edf6f787fbb7
+  Fretboard: 2f329e209ac79fe7ce1d44b34cb54f4c7d6bb571
   MusicTheorySwift: 213563918695d0a2fa37a805a0ad63b090a12bfe
 
-PODFILE CHECKSUM: 398c4465212d824d85a7ed286b24a3593af56d19
+PODFILE CHECKSUM: 3dcd1672aaf5baed9a47f386522228bed9ac645a
 
 COCOAPODS: 1.2.1.beta.1

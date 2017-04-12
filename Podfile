@@ -4,16 +4,19 @@
 target 'Fretboard iOS' do
   use_frameworks!
   pod 'MusicTheorySwift'
+  pod 'CenterTextLayer'
 end
 
 target 'Fretboard Mac' do
   use_frameworks!
   pod 'MusicTheorySwift'
+  pod 'CenterTextLayer'
 end
 
 target 'Fretboard TV' do
   use_frameworks!
   pod 'MusicTheorySwift'
+  pod 'CenterTextLayer'
 end
 
 target 'Example iOS' do

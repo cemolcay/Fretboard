@@ -134,5 +134,6 @@ Customisable guitar fretboard view for iOS, tvOS and macOS.
 
   # s.xcconfig = { "HEADER_SEARCH_PATHS" => "$(SDKROOT)/usr/include/libxml2" }
   s.dependency "MusicTheorySwift"
+  s.dependency "CenterTextLayer"
 
 end

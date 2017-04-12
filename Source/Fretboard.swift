@@ -12,6 +12,7 @@
   import AppKit
 #endif
 import MusicTheorySwift
+import CenterTextLayer
 
 #if os(iOS) || os(tvOS)
   public typealias FRView = UIView
@@ -129,12 +130,12 @@ public enum FretboardDirection {
 /// Informs changes on fretboard.
 public protocol FretboardDelegate: class {
 
-  /// Informs `FretboardNotes` changes on fretboard when its `tuning`, `startIndex` or `count` changes.
+  /// Informs `FretboardNotes` changes on fretboard when its `tuning`, `startIndex`, `count` or `notes` changes.
   ///
   /// - Parameters:
   ///   - fretboard: Changed fretboard.
   ///   - didNotesChange: New changed notes.
-  func fretboard(_ fretboard: Fretboard, didNotesChange: [FretboardNote])
+  func fretboard(_ fretboard: Fretboard, didChange: [FretboardNote])
 
   /// Informs when `FretboardDirection` changes on fretboard.
   ///
@@ -157,7 +158,7 @@ public class Fretboard {
   public var tuning: FretboardTuning {
     didSet {
       notes = getNotes()
-      delegate?.fretboard(self, didNotesChange: notes)
+      delegate?.fretboard(self, didChange: notes)
     }
   }
 
@@ -165,7 +166,7 @@ public class Fretboard {
   public var startIndex: Int {
     didSet {
       notes = getNotes()
-      delegate?.fretboard(self, didNotesChange: notes)
+      delegate?.fretboard(self, didChange: notes)
     }
   }
 
@@ -173,7 +174,7 @@ public class Fretboard {
   public var count: Int {
     didSet {
       notes = getNotes()
-      delegate?.fretboard(self, didNotesChange: notes)
+      delegate?.fretboard(self, didChange: notes)
     }
   }
 
@@ -308,10 +309,16 @@ public class FretView: FRView {
   public var noteType: FretNoteType = .none
 
   /// Note drawing offset from edges.
-  public var noteOffset: CGFloat = 10
+  public var noteOffset: CGFloat = 5
 
   /// If its 0th fret, than it is an open string, which is not a fret technically but represented as a FretView.
   public var isOpenString: Bool = false
+
+  /// Draws the selected note on its text layer.
+  public var isDrawSelectedNoteText: Bool = false
+
+  /// When we are on chordMode, we check the if capo on the fret to detect chords.
+  public var isCapoOn: Bool = false
 
   /// Shape layer that strings draws on.
   public var stringLayer = CAShapeLayer()
@@ -321,6 +328,12 @@ public class FretView: FRView {
 
   /// Shape layer that notes draws on.
   public var noteLayer = CAShapeLayer()
+
+  /// Text layer that notes writes on.
+  public var textLayer = CenterTextLayer()
+
+  /// `textLayer` color that note text draws on.
+  public var textColor = FRColor.white.cgColor
 
   // MARK: Init
 
@@ -360,6 +373,7 @@ public class FretView: FRView {
     layer.addSublayer(stringLayer)
     layer.addSublayer(fretLayer)
     layer.addSublayer(noteLayer)
+    layer.addSublayer(textLayer)
   }
 
   // MARK: Draw
@@ -408,11 +422,7 @@ public class FretView: FRView {
     stringLayer.path = stringPath.cgPath
 
     // NoteLayer
-    noteLayer.removeFromSuperlayer()
-    noteLayer = CAShapeLayer()
     noteLayer.frame = layer.bounds
-    noteLayer.fillColor = FRColor.black.cgColor
-    layer.addSublayer(noteLayer)
 
     let noteSize = max(min(noteLayer.frame.size.width, noteLayer.frame.size.height) - noteOffset, 0)
     var notePath = FRBezierPath()
@@ -578,6 +588,18 @@ public class FretView: FRView {
     }
 
     noteLayer.path = notePath.cgPath
+
+    // TextLayer
+    let noteText = NSAttributedString(
+      string: "\(note.note.type)",
+      attributes: [
+        NSForegroundColorAttributeName: textColor,
+        NSFontAttributeName: FRFont.systemFont(ofSize: noteSize / 2)
+      ])
+
+    textLayer.alignmentMode = kCAAlignmentCenter
+    textLayer.string = isDrawSelectedNoteText && note.isSelected ? noteText : nil
+    textLayer.frame = layer.bounds
   }
 }
 
@@ -590,17 +612,19 @@ public class FretboardView: FRView, FretboardDelegate {
   @IBInspectable public var isDrawNoteName: Bool = true { didSet { redraw() }}
   @IBInspectable public var isDrawFretNumber: Bool = true { didSet { redraw() }}
   @IBInspectable public var isChordModeOn: Bool = false { didSet { redraw() }}
-  @IBInspectable public var fretWidth: CGFloat = 4 { didSet { redraw() }}
-  @IBInspectable public var stringWidth: CGFloat = 2 { didSet { redraw() }}
+  @IBInspectable public var fretWidth: CGFloat = 5 { didSet { redraw() }}
+  @IBInspectable public var stringWidth: CGFloat = 0.5 { didSet { redraw() }}
 
   #if os(iOS) || os(tvOS)
-    @IBInspectable public var stringColor: UIColor = .gray { didSet { redraw() }}
-    @IBInspectable public var fretColor: UIColor = .gray { didSet { redraw() }}
-    @IBInspectable public var noteColor: UIColor = .gray { didSet { redraw() }}
+    @IBInspectable public var stringColor: UIColor = .black { didSet { redraw() }}
+    @IBInspectable public var fretColor: UIColor = .darkGray { didSet { redraw() }}
+    @IBInspectable public var noteColor: UIColor = .black { didSet { redraw() }}
+    @IBInspectable public var noteTextColor: UIColor = .white { didSet { redraw() }}
   #elseif os(OSX)
-    @IBInspectable public var stringColor: NSColor = .gray { didSet { redraw() }}
-    @IBInspectable public var fretColor: NSColor = .gray { didSet { redraw() }}
-    @IBInspectable public var noteColor: NSColor = .gray { didSet { redraw() }}
+    @IBInspectable public var stringColor: NSColor = .black { didSet { redraw() }}
+    @IBInspectable public var fretColor: NSColor = .darkGray { didSet { redraw() }}
+    @IBInspectable public var noteColor: NSColor = .black { didSet { redraw() }}
+    @IBInspectable public var noteTextColor: NSColor = .white { didSet { redraw() }}
   #endif
 
   private var fretViews: [FretView] = []
@@ -711,14 +735,14 @@ public class FretboardView: FRView, FretboardDelegate {
           fret.noteType = .default
         }
 
-        // Chord mode
+        // Do not draw higher notes on the same string
         if isChordModeOn {
           let selectedNotesOnString = fretboard.notes
             .filter({ $0.stringIndex == stringIndex && $0.isSelected })
             .sorted(by: { $0.fretIndex < $1.fretIndex })
           if selectedNotesOnString.count > 1,
             selectedNotesOnString
-              .suffix(from: 1)
+              .suffix(from: 2)
               .contains(where: { $0.fretIndex == fretIndex }) {
             fret.noteType = .none
           }
@@ -730,10 +754,13 @@ public class FretboardView: FRView, FretboardDelegate {
       fret.note = note
       fret.direction = fretboard.direction
       fret.isOpenString = fretboard.startIndex == 0 && fretIndex == 0
+      fret.isDrawSelectedNoteText = isDrawNoteName
+      fret.textColor = noteTextColor.cgColor
       fret.stringLayer.strokeColor = stringColor.cgColor
       fret.stringLayer.lineWidth = stringWidth
       fret.fretLayer.strokeColor = fretColor.cgColor
       fret.fretLayer.lineWidth = fretWidth
+      fret.noteLayer.fillColor = noteColor.cgColor
       fret.frame = CGRect(origin: position, size: fretSize)
     }
   }
@@ -748,7 +775,7 @@ public class FretboardView: FRView, FretboardDelegate {
 
   // MARK: FretboardDelegate
 
-  public func fretboard(_ fretboard: Fretboard, didNotesChange: [FretboardNote]) {
+  public func fretboard(_ fretboard: Fretboard, didChange: [FretboardNote]) {
     setup()
   }
 
@@ -758,5 +785,11 @@ public class FretboardView: FRView, FretboardDelegate {
 
   public func fretboad(_ fretboard: Fretboard, didSelectedNotesChange: [FretboardNote]) {
     redraw()
+  }
+
+  // MARK: CHord Mode
+
+  private func setupChordMode() {
+
   }
 }
