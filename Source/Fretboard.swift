@@ -374,6 +374,12 @@ public class FretView: FRView {
     layer.addSublayer(fretLayer)
     layer.addSublayer(noteLayer)
     layer.addSublayer(textLayer)
+
+    #if os(iOS) || os(tvOS)
+      textLayer.contentsScale = UIScreen.main.scale
+    #elseif os(OSX)
+      textLayer.contentsScale = NSScreen.main()?.backingScaleFactor ?? 1
+    #endif
   }
 
   // MARK: Draw
@@ -785,11 +791,5 @@ public class FretboardView: FRView, FretboardDelegate {
 
   public func fretboad(_ fretboard: Fretboard, didSelectedNotesChange: [FretboardNote]) {
     redraw()
-  }
-
-  // MARK: CHord Mode
-
-  private func setupChordMode() {
-
   }
 }
