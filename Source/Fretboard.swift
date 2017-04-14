@@ -286,6 +286,48 @@ public class Fretboard {
   }
 }
 
+// MARK: - FretLabel
+
+@IBDesignable
+public class FretLabel: FRView {
+  public var textLayer = CenterTextLayer()
+
+  // MARK: Init
+
+  #if os(iOS) || os(tvOS)
+  public override init(frame: CGRect) {
+  super.init(frame: frame)
+  layer.addSublayer(textLayer)
+  }
+  #elseif os(OSX)
+  public override init(frame frameRect: NSRect) {
+    super.init(frame: frameRect)
+    wantsLayer = true
+    textLayer.alignmentMode = kCAAlignmentCenter
+    layer?.addSublayer(textLayer)
+  }
+  #endif
+
+  public required init?(coder aDecoder: NSCoder) {
+    super.init(coder: aDecoder)
+  }
+
+  // MARK: Lifecycle
+
+  #if os(iOS) || os(tvOS)
+  public override func layoutSubviews() {
+    super.layoutSubviews()
+    textLayer.frame = layer.bounds
+  }
+  #elseif os(OSX)
+  public override func layout() {
+    super.layout()
+    guard let layer = layer else { return }
+    textLayer.frame = layer.bounds
+  }
+  #endif
+}
+
 // MARK: - FretView
 
 public enum FretNoteType {
@@ -616,6 +658,7 @@ public class FretboardView: FRView, FretboardDelegate {
   public var fretboard = Fretboard()
 
   @IBInspectable public var isDrawNoteName: Bool = true { didSet { redraw() }}
+  @IBInspectable public var isDrawStringName: Bool = true { didSet { redraw() }}
   @IBInspectable public var isDrawFretNumber: Bool = true { didSet { redraw() }}
   @IBInspectable public var isChordModeOn: Bool = false { didSet { redraw() }}
   @IBInspectable public var fretWidth: CGFloat = 5 { didSet { redraw() }}
@@ -626,14 +669,20 @@ public class FretboardView: FRView, FretboardDelegate {
     @IBInspectable public var fretColor: UIColor = .darkGray { didSet { redraw() }}
     @IBInspectable public var noteColor: UIColor = .black { didSet { redraw() }}
     @IBInspectable public var noteTextColor: UIColor = .white { didSet { redraw() }}
+    @IBInspectable public var stringLabelColor: UIColor = .black { didSet { redraw() }}
+    @IBInspectable public var fretLabelColor: UIColor = .black { didSet { redraw() }}
   #elseif os(OSX)
     @IBInspectable public var stringColor: NSColor = .black { didSet { redraw() }}
     @IBInspectable public var fretColor: NSColor = .darkGray { didSet { redraw() }}
     @IBInspectable public var noteColor: NSColor = .black { didSet { redraw() }}
     @IBInspectable public var noteTextColor: NSColor = .white { didSet { redraw() }}
+    @IBInspectable public var stringLabelColor: NSColor = .black { didSet { redraw() }}
+    @IBInspectable public var fretLabelColor: NSColor = .black { didSet { redraw() }}
   #endif
 
   private var fretViews: [FretView] = []
+  private var fretLabels: [FretLabel] = []
+  private var stringLabels: [FretLabel] = []
 
   // MARK: Init
 
@@ -671,13 +720,24 @@ public class FretboardView: FRView, FretboardDelegate {
   // MARK: Setup 
 
   private func setup() {
-    // Clear FretViews
-    fretViews.flatMap({ $0 }).forEach({ $0.removeFromSuperview() })
+    // Create fret views
+    fretViews.forEach({ $0.removeFromSuperview() })
     fretViews = []
 
-    // Create FretViews
     fretboard.notes.forEach{ fretViews.append(FretView(note: $0)) }
-    fretViews.flatMap({ $0 }).forEach({ addSubview($0) })
+    fretViews.forEach({ addSubview($0) })
+
+    // Create fret numbers
+    fretLabels.forEach({ $0.removeFromSuperview() })
+    fretLabels = []
+    (0..<fretboard.count).forEach({ _ in fretLabels.append(FretLabel(frame: .zero)) })
+    fretLabels.forEach({ addSubview($0) })
+
+    // Create string names
+    stringLabels.forEach({ $0.removeFromSuperview() })
+    stringLabels = []
+    fretboard.tuning.strings.forEach({ _ in stringLabels.append(FretLabel(frame: .zero)) })
+    stringLabels.forEach({ addSubview($0) })
 
     // Set FretboardDelegate
     fretboard.delegate = self
@@ -686,32 +746,129 @@ public class FretboardView: FRView, FretboardDelegate {
   // MARK: Draw
 
   private func draw() {
-    let fretSize = CGSize(
-      width: frame.size.width / CGFloat(fretboard.direction == .horizontal ? fretboard.count : fretboard.tuning.strings.count),
-      height: frame.size.height / CGFloat(fretboard.direction == .horizontal ? fretboard.tuning.strings.count: fretboard.count))
+    let gridWidth = frame.size.width / (CGFloat(fretboard.direction == .horizontal ? fretboard.count : fretboard.tuning.strings.count) + 0.5)
+    let gridHeight = frame.size.height / (CGFloat(fretboard.direction == .horizontal ? fretboard.tuning.strings.count: fretboard.count) + 0.5)
 
+    // String label size
+    var stringLabelSize = CGSize()
+    if isDrawStringName {
+      let horizontalSize = CGSize(
+        width: gridWidth / 2,
+        height: gridHeight)
+
+      let verticalSize = CGSize(
+        width: gridWidth,
+        height: gridHeight / 2)
+
+      stringLabelSize = fretboard.direction == .horizontal ? horizontalSize : verticalSize
+    }
+
+    // Fret label size
+    var fretLabelSize = CGSize()
+    if isDrawFretNumber {
+      let horizontalSize = CGSize(
+        width: (frame.size.width - stringLabelSize.width) / CGFloat(fretboard.direction == .horizontal ? fretboard.count : fretboard.tuning.strings.count),
+        height: gridHeight / 2)
+
+      let verticalSize = CGSize(
+        width: gridWidth / 2,
+        height: (frame.size.height - stringLabelSize.height) / CGFloat(fretboard.direction == .horizontal ? fretboard.tuning.strings.count : fretboard.count))
+
+      fretLabelSize = fretboard.direction == .horizontal ? horizontalSize : verticalSize
+    }
+
+    // Fret view size
+    let horizontalSize = CGSize(
+      width: (frame.size.width - stringLabelSize.width) / CGFloat(fretboard.count),
+      height: (frame.size.height - fretLabelSize.height) / CGFloat(fretboard.tuning.strings.count))
+
+    let verticalSize = CGSize(
+      width: (frame.size.width - fretLabelSize.width) / CGFloat(fretboard.tuning.strings.count),
+      height: (frame.size.height - stringLabelSize.height) / CGFloat(fretboard.count))
+
+    var fretSize = fretboard.direction == .horizontal ? horizontalSize : verticalSize
+
+    // Layout string labels
+    for (index, label) in stringLabels.enumerated() {
+      var position = CGPoint()
+      switch fretboard.direction {
+      case .horizontal:
+        #if os(iOS) || os(tvOS)
+          position.y = stringLabelSize.height * CGFloat(index)
+        #elseif os(OSX)
+          position.y = frame.size.height - stringLabelSize.height - (stringLabelSize.height * CGFloat(index))
+        #endif
+      case .vertical:
+        position.x = stringLabelSize.width * CGFloat(index) + fretLabelSize.width
+        position.y = frame.size.height - stringLabelSize.height
+      }
+
+      label.textLayer.string = NSAttributedString(
+        string: "\(fretboard.tuning.strings[index].type)",
+        attributes: [
+          NSForegroundColorAttributeName: stringLabelColor,
+          NSFontNameAttribute: FRFont.systemFont(ofSize: min(stringLabelSize.width, stringLabelSize.height))
+        ])
+      label.frame = CGRect(origin: position, size: stringLabelSize)
+    }
+
+    // Layout fret labels
+    for (index, label) in fretLabels.enumerated() {
+      var position = CGPoint()
+      switch fretboard.direction {
+      case .horizontal:
+        position.x = (fretLabelSize.width * CGFloat(index)) + stringLabelSize.width
+        #if os(iOS) || os(tvOS)
+          position.y = frame.size.height - fretLabelSize.height
+        #endif
+      case .vertical:
+        #if os(iOS) || os(tvOS)
+          position.y = fretLabelSize.height * CGFloat(index) + stringLabelSize.height
+        #elseif os(OSX)
+          position.y = frame.size.height - fretLabelSize.height - (fretLabelSize.height * CGFloat(index)) - stringLabelSize.height
+        #endif
+      }
+
+      label.textLayer.string = NSAttributedString(
+        string: "\(fretboard.startIndex + index)",
+        attributes: [
+          NSForegroundColorAttributeName: fretLabelColor,
+          NSFontNameAttribute: FRFont.systemFont(ofSize: min(fretLabelSize.width, fretLabelSize.height))
+        ])
+      label.frame = CGRect(origin: position, size: fretLabelSize)
+    }
+
+    // Layout fret views
     for (index, fret) in fretViews.enumerated() {
       let fretIndex = fret.note.fretIndex
       let stringIndex = fret.note.stringIndex
+
+      // Make 0th fret half of fret size because it is open string.
+      if fretboard.startIndex == 0, index == 0 {
+        switch fretboard.direction {
+        case .horizontal: fretSize.width = fretSize.width / 2
+        case .vertical: fretSize.height = fretSize.height / 2
+        }
+      }
 
       // Position
       var position = CGPoint()
       switch fretboard.direction {
       case .horizontal:
         #if os(iOS) || os(tvOS)
-          position.x = fretSize.width * CGFloat(fretIndex)
+          position.x = fretSize.width * CGFloat(fretIndex) + stringLabelSize.width
           position.y = fretSize.height * CGFloat(stringIndex)
         #elseif os(OSX)
-          position.x = fretSize.width * CGFloat(fretIndex)
+          position.x = fretSize.width * CGFloat(fretIndex) + stringLabelSize.width
           position.y = frame.size.height - fretSize.height - (fretSize.height * CGFloat(stringIndex))
         #endif
       case .vertical:
         #if os(iOS) || os(tvOS)
-          position.x = fretSize.width * CGFloat(stringIndex)
-          position.y = fretSize.height * CGFloat(fretIndex)
+          position.x = fretSize.width * CGFloat(stringIndex) + fretLabelSize.width
+          position.y = fretSize.height * CGFloat(fretIndex) + stringLabelSize.height
         #elseif os(OSX)
-          position.x = fretSize.width * CGFloat(stringIndex)
-          position.y = frame.size.height - fretSize.height - (fretSize.height * CGFloat(fretIndex))
+          position.x = fretSize.width * CGFloat(stringIndex) + fretLabelSize.width
+          position.y = frame.size.height - fretSize.height - (fretSize.height * CGFloat(fretIndex)) - stringLabelSize.height
         #endif
       }
 
