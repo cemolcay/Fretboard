@@ -296,14 +296,17 @@ public class FretLabel: FRView {
 
   #if os(iOS) || os(tvOS)
   public override init(frame: CGRect) {
-  super.init(frame: frame)
-  layer.addSublayer(textLayer)
+    super.init(frame: frame)
+    textLayer.alignmentMode = kCAAlignmentCenter
+    textLayer.contentsScale = UIScreen.main.scale
+    layer.addSublayer(textLayer)
   }
   #elseif os(OSX)
   public override init(frame frameRect: NSRect) {
     super.init(frame: frameRect)
     wantsLayer = true
     textLayer.alignmentMode = kCAAlignmentCenter
+    textLayer.contentsScale = NSScreen.main()?.backingScaleFactor ?? 1
     layer?.addSublayer(textLayer)
   }
   #endif
@@ -800,14 +803,13 @@ public class FretboardView: FRView, FretboardDelegate {
         #endif
       case .vertical:
         position.x = stringLabelSize.width * CGFloat(index) + fretLabelSize.width
-        position.y = frame.size.height - stringLabelSize.height
       }
 
       label.textLayer.string = NSAttributedString(
         string: "\(fretboard.tuning.strings[index].type)",
         attributes: [
           NSForegroundColorAttributeName: stringLabelColor,
-          NSFontNameAttribute: FRFont.systemFont(ofSize: min(stringLabelSize.width, stringLabelSize.height))
+          NSFontAttributeName: FRFont.systemFont(ofSize: min(min(stringLabelSize.width, stringLabelSize.height), 17))
         ])
       label.frame = CGRect(origin: position, size: stringLabelSize)
     }
@@ -829,12 +831,16 @@ public class FretboardView: FRView, FretboardDelegate {
         #endif
       }
 
-      label.textLayer.string = NSAttributedString(
-        string: "\(fretboard.startIndex + index)",
-        attributes: [
-          NSForegroundColorAttributeName: fretLabelColor,
-          NSFontNameAttribute: FRFont.systemFont(ofSize: min(fretLabelSize.width, fretLabelSize.height))
-        ])
+      if fretboard.startIndex == 0, index == 0 {
+        label.textLayer.string = nil
+      } else {
+        label.textLayer.string = NSAttributedString(
+          string: "\(fretboard.startIndex + index)",
+          attributes: [
+            NSForegroundColorAttributeName: fretLabelColor,
+            NSFontAttributeName: FRFont.systemFont(ofSize: min(min(fretLabelSize.width, fretLabelSize.height), 17))
+          ])
+      }
       label.frame = CGRect(origin: position, size: fretLabelSize)
     }
 
@@ -842,14 +848,6 @@ public class FretboardView: FRView, FretboardDelegate {
     for (index, fret) in fretViews.enumerated() {
       let fretIndex = fret.note.fretIndex
       let stringIndex = fret.note.stringIndex
-
-      // Make 0th fret half of fret size because it is open string.
-      if fretboard.startIndex == 0, index == 0 {
-        switch fretboard.direction {
-        case .horizontal: fretSize.width = fretSize.width / 2
-        case .vertical: fretSize.height = fretSize.height / 2
-        }
-      }
 
       // Position
       var position = CGPoint()
@@ -905,7 +903,7 @@ public class FretboardView: FRView, FretboardDelegate {
             .sorted(by: { $0.fretIndex < $1.fretIndex })
           if selectedNotesOnString.count > 1,
             selectedNotesOnString
-              .suffix(from: 2)
+              .suffix(from: 1)
               .contains(where: { $0.fretIndex == fretIndex }) {
             fret.noteType = .none
           }
@@ -917,12 +915,12 @@ public class FretboardView: FRView, FretboardDelegate {
       fret.note = note
       fret.direction = fretboard.direction
       fret.isOpenString = fretboard.startIndex == 0 && fretIndex == 0
-      fret.isDrawSelectedNoteText = isDrawNoteName
+      fret.isDrawSelectedNoteText = isDrawNoteName && fret.noteType != .none
       fret.textColor = noteTextColor.cgColor
       fret.stringLayer.strokeColor = stringColor.cgColor
       fret.stringLayer.lineWidth = stringWidth
       fret.fretLayer.strokeColor = fretColor.cgColor
-      fret.fretLayer.lineWidth = fretWidth
+      fret.fretLayer.lineWidth = fretWidth * (fretboard.startIndex == 0 && fretIndex == 0 ? 2 : 1)
       fret.noteLayer.fillColor = noteColor.cgColor
       fret.frame = CGRect(origin: position, size: fretSize)
     }
