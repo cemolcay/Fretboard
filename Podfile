@@ -21,17 +21,17 @@ end
 
 target 'Example iOS' do
   use_frameworks!
-  pod 'Fretboard', :path => '.'
+  pod 'Fretboard' #, :path => '.'
 end
 
 target 'Example Mac' do
   use_frameworks!
-  pod 'Fretboard', :path => '.'
+  pod 'Fretboard' #, :path => '.'
 end
 
 target 'Example TV' do
   use_frameworks!
-  pod 'Fretboard', :path => '.'
+  pod 'Fretboard' #, :path => '.'
 end
 
 post_install do |installer|

@@ -165,6 +165,9 @@ public class Fretboard {
   /// Starting fret number. Fret 0 is open string. Defaults 0.
   public var startIndex: Int {
     didSet {
+      if startIndex < 0 {
+        startIndex = 0
+      }
       notes = getNotes()
       delegate?.fretboard(self, didChange: notes)
     }
@@ -173,6 +176,9 @@ public class Fretboard {
   /// Fret count. Defaults 5.
   public var count: Int {
     didSet {
+      if count < 1 {
+        count = 1
+      }
       notes = getNotes()
       delegate?.fretboard(self, didChange: notes)
     }
@@ -660,6 +666,9 @@ public class FretView: FRView {
 public class FretboardView: FRView, FretboardDelegate {
   public var fretboard = Fretboard()
 
+  @IBInspectable public var fretStartIndex: Int = 0 { didSet { fretboard.startIndex = fretStartIndex }}
+  @IBInspectable public var fretCount: Int = 5 { didSet { fretboard.count = fretCount }}
+  @IBInspectable public var direction: String = "horizontal" { didSet { directionDidChange() }}
   @IBInspectable public var isDrawNoteName: Bool = true { didSet { redraw() }}
   @IBInspectable public var isDrawStringName: Bool = true { didSet { redraw() }}
   @IBInspectable public var isDrawFretNumber: Bool = true { didSet { redraw() }}
@@ -744,6 +753,15 @@ public class FretboardView: FRView, FretboardDelegate {
 
     // Set FretboardDelegate
     fretboard.delegate = self
+  }
+
+  private func directionDidChange() {
+    switch direction {
+    case "vertical", "Vertical":
+      fretboard.direction = .vertical
+    default:
+      fretboard.direction = .horizontal
+    }
   }
 
   // MARK: Draw
