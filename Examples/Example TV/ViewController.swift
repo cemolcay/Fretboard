@@ -18,12 +18,11 @@ class ViewController: UIViewController {
     super.viewDidLoad()
 
     let chord = Chord(type: .maj, key: .a)
-    let firstPosition = chord.notes(octaves: [2, 3, 4])
 
     verticalFretboard?.fretboard.direction = .vertical
-    verticalFretboard?.fretboard.select(notes: firstPosition)
+    verticalFretboard?.fretboard.select(chord: chord)
 
     horizontalFretboard?.fretboard.direction = .horizontal
-    horizontalFretboard?.fretboard.select(notes: firstPosition)
+    horizontalFretboard?.fretboard.select(chord: chord)
   }
 }

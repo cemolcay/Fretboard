@@ -21,9 +21,7 @@ class ViewController: UIViewController {
     super.viewDidLoad()
 
     let chord = Chord(type: .maj, key: .a)
-    let firstPosition = chord.notes(octaves: fretboardView?.fretboard.octaves ?? [2, 3, 4])
-    fretboardView?.fretboard.direction = .vertical
-    fretboardView?.fretboard.select(notes: firstPosition)
+    fretboardView?.fretboard.select(chord: chord)
   }
 }
 
