@@ -8,21 +8,21 @@ Demo
 
 #### Mac
 
-![alt tag]()
+![alt tag](https://github.com/cemolcay/Fretboard/blob/master/Examples/mac_horizontal.png?raw=true)
 
-![alt tag]()
+![alt tag](https://github.com/cemolcay/Fretboard/blob/master/Examples/mac_vertical.png?raw=true)
     
 #### iOS
 
-![alt tag]()
+![alt tag](https://github.com/cemolcay/Fretboard/blob/master/Examples/ios.png?raw=true)
 
 #### Apple TV
 
-![alt tag]()
+![alt tag](https://github.com/cemolcay/Fretboard/blob/master/Examples/tv.png?raw=true)
 
 #### Storyboard
 
-![alt tag]()
+![alt tag](https://github.com/cemolcay/Fretboard/blob/master/Examples/ib.png?raw=true)
 
 Requierments
 ----
