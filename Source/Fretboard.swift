@@ -379,7 +379,7 @@ public class FretView: FRView {
   public var isOpenString: Bool = false
 
   /// Draws the selected note on its text layer.
-  public var isDrawSelectedNoteText: Bool = false
+  public var isDrawSelectedNoteText: Bool = true
 
   /// When we are on chordMode, we check the if capo on the fret to detect chords.
   public var isCapoOn: Bool = false
@@ -685,6 +685,7 @@ public class FretboardView: FRView, FretboardDelegate {
   @IBInspectable public var isDrawNoteName: Bool = true { didSet { redraw() }}
   @IBInspectable public var isDrawStringName: Bool = true { didSet { redraw() }}
   @IBInspectable public var isDrawFretNumber: Bool = true { didSet { redraw() }}
+  @IBInspectable public var isDrawCapo: Bool = true { didSet { redraw() }}
   @IBInspectable public var isChordModeOn: Bool = false { didSet { redraw() }}
   @IBInspectable public var fretWidth: CGFloat = 5 { didSet { redraw() }}
   @IBInspectable public var stringWidth: CGFloat = 0.5 { didSet { redraw() }}
@@ -907,7 +908,7 @@ public class FretboardView: FRView, FretboardDelegate {
       fret.note = fretboard.notes[index]
       fret.direction = fretboard.direction
       fret.isOpenString = fretboard.startIndex == 0 && fretIndex == 0
-      fret.isDrawSelectedNoteText = isDrawNoteName && fret.noteType != .none
+      fret.isDrawSelectedNoteText = isDrawNoteName
       fret.textColor = noteTextColor.cgColor
       fret.stringLayer.strokeColor = stringColor.cgColor
       fret.stringLayer.lineWidth = stringWidth
@@ -924,7 +925,9 @@ public class FretboardView: FRView, FretboardDelegate {
       let stringIndex = fret.note.stringIndex
 
       let note = fretboard.notes[index]
-      if note.isSelected {
+      fret.note = note
+
+      if note.isSelected, isDrawCapo {
         // Set note types
         let notesOnFret = fretboard.notes.filter({ $0.fretIndex == fretIndex }).sorted(by: { $0.stringIndex < $1.stringIndex })
         if (notesOnFret[safe: stringIndex-1] == nil || notesOnFret[safe: stringIndex-1]?.isSelected == false),
@@ -954,6 +957,8 @@ public class FretboardView: FRView, FretboardDelegate {
             fret.noteType = .none
           }
         }
+      } else if note.isSelected, !isDrawCapo {
+        fret.noteType = .default
       } else {
         fret.noteType = .none
       }
