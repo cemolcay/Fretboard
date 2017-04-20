@@ -872,7 +872,7 @@ public class FretboardView: FRView, FretboardDelegate {
           string: "\(fretboard.startIndex + index)",
           attributes: [
             NSForegroundColorAttributeName: fretLabelColor,
-            NSFontAttributeName: FRFont.systemFont(ofSize: min(min(fretLabelSize.width, fretLabelSize.height), 17))
+            NSFontAttributeName: FRFont.systemFont(ofSize: min(fretLabelSize.width, fretLabelSize.height) - 2)
           ])
       }
       label.frame = CGRect(origin: position, size: fretLabelSize)
