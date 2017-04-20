@@ -55,13 +55,26 @@ import CenterTextLayer
   }
 #endif
 
+extension Collection where Indices.Iterator.Element == Index {
+  /// Returns the element at the specified index iff it is within bounds, otherwise nil.
+  subscript (safe index: Index) -> Generator.Element? {
+    return indices.contains(index) ? self[index] : nil
+  }
+}
+
 // MARK: - Fretboard
 
-public func ==(left: FretboardNote, right: FretboardNote) -> Bool {
-  return left.note == right.note &&
-    left.stringIndex == right.stringIndex &&
-    left.fretIndex == right.fretIndex &&
-    left.isSelected == right.isSelected
+public func ==(left: FretboardNote?, right: FretboardNote?) -> Bool {
+  switch (left, right) {
+  case (.none, .none):
+    return true
+  case (.some(let left), .some(let right)):
+    return left.note == right.note &&
+      left.stringIndex == right.stringIndex &&
+      left.fretIndex == right.fretIndex
+  default:
+    return false
+  }
 }
 
 /// Describes a note in fretboard.
@@ -721,11 +734,13 @@ public class FretboardView: FRView, FretboardDelegate {
     public override func layoutSubviews() {
       super.layoutSubviews()
       draw()
+      drawNotes()
     }
   #elseif os(OSX)
     public override func layout() {
       super.layout()
       draw()
+      drawNotes()
     }
   #endif
 
@@ -888,28 +903,41 @@ public class FretboardView: FRView, FretboardDelegate {
         #endif
       }
 
-      // Note type
+      // Fret options
+      fret.note = fretboard.notes[index]
+      fret.direction = fretboard.direction
+      fret.isOpenString = fretboard.startIndex == 0 && fretIndex == 0
+      fret.isDrawSelectedNoteText = isDrawNoteName && fret.noteType != .none
+      fret.textColor = noteTextColor.cgColor
+      fret.stringLayer.strokeColor = stringColor.cgColor
+      fret.stringLayer.lineWidth = stringWidth
+      fret.fretLayer.strokeColor = fretColor.cgColor
+      fret.fretLayer.lineWidth = fretWidth * (fretboard.startIndex == 0 && fretIndex == 0 ? 2 : 1)
+      fret.noteLayer.fillColor = noteColor.cgColor
+      fret.frame = CGRect(origin: position, size: fretSize)
+    }
+  }
+
+  private func drawNotes() {
+    for (index, fret) in fretViews.enumerated() {
+      let fretIndex = fret.note.fretIndex
+      let stringIndex = fret.note.stringIndex
+
       let note = fretboard.notes[index]
       if note.isSelected {
-        let selectedFrets = fretboard.notes
-          .filter({ $0.fretIndex == fretIndex && $0.isSelected })
-          .sorted(by: { $0.stringIndex < $1.stringIndex })
-
-        if let selectedIndex = selectedFrets.index(where: { $0 == note }),
-          selectedFrets.count > 2 {
-          if let first = selectedFrets.first, fret.note == first  {
-            let isCapo = selectedFrets[selectedIndex.advanced(by: 1)].stringIndex == note.stringIndex + 1 &&
-              selectedFrets[selectedIndex.advanced(by: 2)].stringIndex == note.stringIndex + 2
-            fret.noteType = isCapo ? .capoStart : .default
-          } else if let last = selectedFrets.last, fret.note == last {
-            let isCapo = selectedFrets[selectedIndex.advanced(by: -1)].stringIndex == note.stringIndex - 1 &&
-              selectedFrets[selectedIndex.advanced(by: -2)].stringIndex == note.stringIndex - 2
-            fret.noteType = isCapo ? .capoEnd : .default
-          } else {
-            let isCapo = selectedFrets[selectedIndex.advanced(by: 1)].stringIndex == note.stringIndex + 1 &&
-              selectedFrets[selectedIndex.advanced(by: -1)].stringIndex == note.stringIndex - 1
-            fret.noteType = isCapo ? .capo : .default
-          }
+        // Set note types
+        let notesOnFret = fretboard.notes.filter({ $0.fretIndex == fretIndex }).sorted(by: { $0.stringIndex < $1.stringIndex })
+        if (notesOnFret[safe: stringIndex-1] == nil || notesOnFret[safe: stringIndex-1]?.isSelected == false),
+          notesOnFret[safe: stringIndex+1]?.isSelected == true,
+          notesOnFret[safe: stringIndex+2]?.isSelected == true {
+          fret.noteType = .capoStart
+        } else if (notesOnFret[safe: stringIndex+1] == nil || notesOnFret[safe: stringIndex+1]?.isSelected == false),
+          notesOnFret[safe: stringIndex-1]?.isSelected == true,
+          notesOnFret[safe: stringIndex-2]?.isSelected == true {
+          fret.noteType = .capoEnd
+        } else if notesOnFret[safe: stringIndex-1]?.isSelected == true,
+          notesOnFret[safe: stringIndex+1]?.isSelected == true {
+          fret.noteType = .capo
         } else {
           fret.noteType = .default
         }
@@ -930,17 +958,11 @@ public class FretboardView: FRView, FretboardDelegate {
         fret.noteType = .none
       }
 
-      fret.note = note
-      fret.direction = fretboard.direction
-      fret.isOpenString = fretboard.startIndex == 0 && fretIndex == 0
-      fret.isDrawSelectedNoteText = isDrawNoteName && fret.noteType != .none
-      fret.textColor = noteTextColor.cgColor
-      fret.stringLayer.strokeColor = stringColor.cgColor
-      fret.stringLayer.lineWidth = stringWidth
-      fret.fretLayer.strokeColor = fretColor.cgColor
-      fret.fretLayer.lineWidth = fretWidth * (fretboard.startIndex == 0 && fretIndex == 0 ? 2 : 1)
-      fret.noteLayer.fillColor = noteColor.cgColor
-      fret.frame = CGRect(origin: position, size: fretSize)
+      #if os(iOS) || os(tvOS)
+        fret.setNeedsLayout()
+      #elseif os(OSX)
+        fret.needsLayout = true
+      #endif
     }
   }
 
@@ -963,6 +985,6 @@ public class FretboardView: FRView, FretboardDelegate {
   }
 
   public func fretboad(_ fretboard: Fretboard, didSelectedNotesChange: [FretboardNote]) {
-    redraw()
+    drawNotes()
   }
 }

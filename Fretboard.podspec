@@ -186,8 +186,8 @@ DESC
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  s.source       = { :git => "https://github.com/cemolcay/Fretboard.git", :tag => "#{s.version}" }
-  # { :path => "." }
+  # s.source       = { :git => "https://github.com/cemolcay/Fretboard.git", :tag => "#{s.version}" }
+  s.source       =  { :path => "." }
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
   #
