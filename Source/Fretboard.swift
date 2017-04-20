@@ -116,12 +116,12 @@ public enum FretboardTuning {
     switch self {
     case .standard:
       return [
-        Note(type: .e, octave: 4),
-        Note(type: .b, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .d, octave: 3),
-        Note(type: .a, octave: 2),
         Note(type: .e, octave: 2),
+        Note(type: .a, octave: 2),
+        Note(type: .d, octave: 3),
+        Note(type: .g, octave: 3),
+        Note(type: .b, octave: 3),
+        Note(type: .e, octave: 4),
       ]
     case .dropD:
       return FretboardTuning.standard.strings.map({ $0 - 1 })
@@ -226,7 +226,8 @@ public class Fretboard {
   /// - Returns: Notes of fretboard horizontally, from left to right frets increasing, from top to down strings increasing.
   private func getNotes() -> [FretboardNote] {
     var notes: [FretboardNote] = []
-    for (stringIndex, string) in tuning.strings.enumerated() {
+    let strings = direction == .vertical ? tuning.strings : tuning.strings.reversed()
+    for (stringIndex, string) in strings.enumerated() {
       for (fretIndex, fret) in (startIndex..<startIndex + count).enumerated() {
         notes.append(FretboardNote(
           note: string + fret,
@@ -840,7 +841,7 @@ public class FretboardView: FRView, FretboardDelegate {
       }
 
       label.textLayer.string = NSAttributedString(
-        string: "\(fretboard.tuning.strings[index].type)",
+        string: "\(fretboard.tuning.strings[fretboard.tuning.strings.count-index-1].type)",
         attributes: [
           NSForegroundColorAttributeName: stringLabelColor,
           NSFontAttributeName: FRFont.systemFont(ofSize: min(min(stringLabelSize.width, stringLabelSize.height), 17))
