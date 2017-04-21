@@ -16,7 +16,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   CenterTextLayer: 8ba737f794769c3bd0e3f28706b9edf6f787fbb7
-  Fretboard: 2f329e209ac79fe7ce1d44b34cb54f4c7d6bb571
+  Fretboard: 52ffccd4b5dde4428faf24c9ec0eca93cebb167e
   MusicTheorySwift: 213563918695d0a2fa37a805a0ad63b090a12bfe
 
 PODFILE CHECKSUM: 3dcd1672aaf5baed9a47f386522228bed9ac645a

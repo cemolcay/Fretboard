@@ -11,6 +11,15 @@
 		54FFB81EB187C90A4697E4CE /* Pods_Fretboard_Mac.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1201E97A1BFC22433BCEFD99 /* Pods_Fretboard_Mac.framework */; };
 		63A4C0041406815370581157 /* Pods_Fretboard_TV.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC60E010DE4E853821A20DBB /* Pods_Fretboard_TV.framework */; };
 		9D04B37BCA989F1A48AD8C84 /* Pods_Example_TV.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31C995B7AEE6B6F4CDD12C4F /* Pods_Example_TV.framework */; };
+		B21502E21EA9415600018B87 /* FretboardTuning.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21502E11EA9415600018B87 /* FretboardTuning.swift */; };
+		B21502E31EA9415600018B87 /* FretboardTuning.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21502E11EA9415600018B87 /* FretboardTuning.swift */; };
+		B21502E41EA9415600018B87 /* FretboardTuning.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21502E11EA9415600018B87 /* FretboardTuning.swift */; };
+		B21502E61EA9416300018B87 /* FretboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21502E51EA9416300018B87 /* FretboardView.swift */; };
+		B21502E71EA9416300018B87 /* FretboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21502E51EA9416300018B87 /* FretboardView.swift */; };
+		B21502E81EA9416300018B87 /* FretboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21502E51EA9416300018B87 /* FretboardView.swift */; };
+		B21502EA1EA9417500018B87 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21502E91EA9417500018B87 /* Extensions.swift */; };
+		B21502EB1EA9417500018B87 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21502E91EA9417500018B87 /* Extensions.swift */; };
+		B21502EC1EA9417500018B87 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21502E91EA9417500018B87 /* Extensions.swift */; };
 		B22BFC461E9A930A005130EE /* Fretboard.h in Headers */ = {isa = PBXBuildFile; fileRef = B22BFC411E9A9304005130EE /* Fretboard.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B22BFC471E9A930B005130EE /* Fretboard.h in Headers */ = {isa = PBXBuildFile; fileRef = B22BFC411E9A9304005130EE /* Fretboard.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B22BFC491E9A9329005130EE /* Fretboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B22BFC481E9A9329005130EE /* Fretboard.swift */; };
@@ -46,6 +55,9 @@
 		7353E75FC0629D8AF273641D /* Pods-Fretboard TV.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Fretboard TV.release.xcconfig"; path = "Pods/Target Support Files/Pods-Fretboard TV/Pods-Fretboard TV.release.xcconfig"; sourceTree = "<group>"; };
 		95E0E4316A2BDFC2C7F04E06 /* Pods-Fretboard Mac.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Fretboard Mac.release.xcconfig"; path = "Pods/Target Support Files/Pods-Fretboard Mac/Pods-Fretboard Mac.release.xcconfig"; sourceTree = "<group>"; };
 		AC60E010DE4E853821A20DBB /* Pods_Fretboard_TV.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Fretboard_TV.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B21502E11EA9415600018B87 /* FretboardTuning.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FretboardTuning.swift; sourceTree = "<group>"; };
+		B21502E51EA9416300018B87 /* FretboardView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FretboardView.swift; sourceTree = "<group>"; };
+		B21502E91EA9417500018B87 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		B22BFC1D1E9A927D005130EE /* Fretboard.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Fretboard.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B22BFC2B1E9A9290005130EE /* Fretboard.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Fretboard.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B22BFC381E9A929A005130EE /* Fretboard.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Fretboard.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -194,6 +206,9 @@
 			isa = PBXGroup;
 			children = (
 				B22BFC481E9A9329005130EE /* Fretboard.swift */,
+				B21502E11EA9415600018B87 /* FretboardTuning.swift */,
+				B21502E51EA9416300018B87 /* FretboardView.swift */,
+				B21502E91EA9417500018B87 /* Extensions.swift */,
 				B22BFC411E9A9304005130EE /* Fretboard.h */,
 				B22BFC421E9A9304005130EE /* Info iOS.plist */,
 				B22BFC431E9A9304005130EE /* Info Mac.plist */,
@@ -749,7 +764,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B21502E21EA9415600018B87 /* FretboardTuning.swift in Sources */,
 				B22BFC491E9A9329005130EE /* Fretboard.swift in Sources */,
+				B21502E61EA9416300018B87 /* FretboardView.swift in Sources */,
+				B21502EA1EA9417500018B87 /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -757,7 +775,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B21502E31EA9415600018B87 /* FretboardTuning.swift in Sources */,
 				B22BFC4A1E9A939E005130EE /* Fretboard.swift in Sources */,
+				B21502E71EA9416300018B87 /* FretboardView.swift in Sources */,
+				B21502EB1EA9417500018B87 /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -765,7 +786,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B21502E41EA9415600018B87 /* FretboardTuning.swift in Sources */,
 				B22BFC4B1E9A939F005130EE /* Fretboard.swift in Sources */,
+				B21502E81EA9416300018B87 /* FretboardView.swift in Sources */,
+				B21502EC1EA9417500018B87 /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
