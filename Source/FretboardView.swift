@@ -549,7 +549,7 @@ public class FretboardView: FRView, FretboardDelegate {
       }
 
       label.textLayer.string = NSAttributedString(
-        string: "\(fretboard.tuning.strings[fretboard.tuning.strings.count-index-1].type)",
+        string: "\(fretboard.strings[index].type)",
         attributes: [
           NSForegroundColorAttributeName: stringLabelColor,
           NSFontAttributeName: FRFont.systemFont(ofSize: min(min(stringLabelSize.width, stringLabelSize.height), 17))

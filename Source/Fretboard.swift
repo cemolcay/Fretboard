@@ -151,7 +151,6 @@ public class Fretboard {
   /// - Returns: Notes of fretboard horizontally, from left to right frets increasing, from top to down strings increasing.
   private func getNotes() -> [FretboardNote] {
     var notes: [FretboardNote] = []
-    let strings = direction == .vertical ? tuning.strings : tuning.strings.reversed()
     for (stringIndex, string) in strings.enumerated() {
       for (fretIndex, fret) in (startIndex..<startIndex + count).enumerated() {
         notes.append(FretboardNote(
@@ -161,6 +160,13 @@ public class Fretboard {
       }
     }
     return notes
+  }
+
+  /// Returns tuned strings by its direction.
+  /// Left to right higher pitches in vertical direction.
+  /// Bottom to top higer pitches in horizontal direction.
+  var strings: [Note] {
+    return direction == .horizontal ? tuning.strings.reversed() : tuning.strings
   }
 
   /// Returns sorted octave range in fretboard.
