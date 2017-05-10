@@ -69,17 +69,19 @@ I recommend 3, 4 or 5 frets to use that feature.
 
 ### Tuning
 
-Fretboard has a neat tuning property which is a `FretboardTuning` enum, lets you define strings and their reprented notes on fretboard.  
-It has a bunch of premade tuning for guitar, bass and ukelele.  
-You can define custom tunings with custom string count as well.
+Fretboard has a neat tuning property which is a `FretboardTuning` protocol, lets you define strings and their reprented notes on fretboard.  
+It has a bunch of premade tunings in `GuitarTuning`, `BassTuning` and `UkeleleTuning` enums.  
+Also, you can define custom tunings with `CustomTuning` struct with custom string count as well.
 
 ```
-let tuning = FretboardTuning.custom(tuning: [
-  Note(type: .g, octave: 2),
-  Note(type: .d, octave: 2),
-  Note(type: .a, octave: 1),
-  Note(type: .e, octave: 1)
-])
+let tuning = CustomTuning(
+  strings: [
+    Note(type: .g, octave: 2),
+    Note(type: .d, octave: 2),
+    Note(type: .a, octave: 1),
+    Note(type: .e, octave: 1)
+  ], 
+  description: "My Custom Tuning")
 fretboardView?.fretboard.tuning = tuning
 ```
 
