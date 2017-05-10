@@ -552,7 +552,7 @@ public class FretboardView: FRView, FretboardDelegate {
         string: "\(fretboard.strings[index].type)",
         attributes: [
           NSForegroundColorAttributeName: stringLabelColor,
-          NSFontAttributeName: FRFont.systemFont(ofSize: min(min(stringLabelSize.width, stringLabelSize.height), 17))
+          NSFontAttributeName: FRFont.systemFont(ofSize: (min(stringLabelSize.width, stringLabelSize.height) * 2) / 3)
         ])
       label.frame = CGRect(origin: position, size: stringLabelSize)
     }
@@ -581,7 +581,7 @@ public class FretboardView: FRView, FretboardDelegate {
           string: "\(fretboard.startIndex + index)",
           attributes: [
             NSForegroundColorAttributeName: fretLabelColor,
-            NSFontAttributeName: FRFont.systemFont(ofSize: min(fretLabelSize.width, fretLabelSize.height) - 2)
+            NSFontAttributeName: FRFont.systemFont(ofSize: (min(fretLabelSize.width, fretLabelSize.height) * 2) / 3)
           ])
       }
       label.frame = CGRect(origin: position, size: fretLabelSize)
@@ -692,6 +692,7 @@ public class FretboardView: FRView, FretboardDelegate {
 
   public func fretboard(_ fretboard: Fretboard, didChange: [FretboardNote]) {
     setup()
+    drawNotes()
   }
   
   public func fretboard(_ fretboard: Fretboard, didDirectionChange: FretboardDirection) {
