@@ -745,6 +745,70 @@ public enum GuitarTuning: FretboardTuning {
   }
 }
 
+extension GuitarTuning {
+  public static let all: [GuitarTuning] = [
+    .standard,
+    .dropD,
+    .halfStepDown,
+    .fullStepDown,
+    .oneAndHalfStepDown,
+    .doubleDropD,
+    .dropC,
+    .dropDFlat,
+    .dropB,
+    .dropBFlat,
+    .dropA,
+    .openD,
+    .openDMinor,
+    .openG,
+    .openGMinor,
+    .openC,
+    .openDFlat,
+    .openCMinor,
+    .openE7,
+    .openEMinor7,
+    .openGMajor7,
+    .openAMinor,
+    .openAMinor7,
+    .openE,
+    .openA,
+    .c,
+    .dFlat,
+    .bFlat,
+    .baritone,
+    .dadddd,
+    .cgdgbd,
+    .cgdgbe,
+    .dadead,
+    .dgdgad,
+    .openDSus2,
+    .openGSus2,
+    .g6,
+    .modalG,
+    .overtone,
+    .pentatonic,
+    .minorThriad,
+    .majorThriad,
+    .allFourths,
+    .agumentedFourths,
+    .slowMotion,
+    .admiral,
+    .buzzard,
+    .face,
+    .fourAndTwenty,
+    .ostrich,
+    .capo200,
+    .balalaika,
+    .charango,
+    .citternOne,
+    .citternTwo,
+    .dobro,
+    .leftty,
+    .mandoguitar,
+    .rustyCage
+  ]
+}
+
 // MARK: - BassTuning
 
 /// Four, five and six string tunings for bass guitar.
@@ -753,11 +817,23 @@ public enum BassTuning: FretboardTuning {
   case standard5String
   case standard6String
   case dropD4String
+  case dropB4String
+  case openA4String
+  case openE4String
+  case e7sus44string
+  case gsus44String
+  case tenor4String
+  case piccolo4String
   case halfStepDown4String
   case halfStepDown5String
   case halfStepDown6String
   case fullStepDown4String
   case fullStepDown5String
+  case eadgcf6String
+  case fbeadg6String
+  case standard7String
+  case fbeadgc7String
+  case standard8String
 
   public var strings: [Note] {
     switch self {
@@ -792,6 +868,55 @@ public enum BassTuning: FretboardTuning {
         Note(type: .d, octave: 2),
         Note(type: .g, octave: 2),
       ]
+    case .dropB4String:
+      return [
+        Note(type: .d, octave: 1),
+        Note(type: .a, octave: 1),
+        Note(type: .d, octave: 2),
+        Note(type: .g, octave: 2),
+      ]
+    case .openA4String:
+      return [
+        Note(type: .e, octave: 1),
+        Note(type: .a, octave: 1),
+        Note(type: .e, octave: 2),
+        Note(type: .a, octave: 2),
+      ]
+    case .openE4String:
+      return [
+        Note(type: .e, octave: 1),
+        Note(type: .b, octave: 1),
+        Note(type: .e, octave: 2),
+        Note(type: .aFlat, octave: 2),
+      ]
+    case .e7sus44string:
+      return [
+        Note(type: .b, octave: 1),
+        Note(type: .e, octave: 1),
+        Note(type: .a, octave: 2),
+        Note(type: .d, octave: 2),
+      ]
+    case .gsus44String:
+      return [
+        Note(type: .d, octave: 1),
+        Note(type: .a, octave: 1),
+        Note(type: .d, octave: 2),
+        Note(type: .g, octave: 2),
+      ]
+    case .tenor4String:
+      return [
+        Note(type: .a, octave: 1),
+        Note(type: .d, octave: 1),
+        Note(type: .g, octave: 2),
+        Note(type: .c, octave: 2),
+      ]
+    case .piccolo4String:
+      return [
+        Note(type: .e, octave: 2),
+        Note(type: .a, octave: 2),
+        Note(type: .d, octave: 3),
+        Note(type: .g, octave: 3),
+      ]
     case .halfStepDown4String:
       return [
         Note(type: .eFlat, octave: 1),
@@ -809,12 +934,12 @@ public enum BassTuning: FretboardTuning {
       ]
     case .halfStepDown6String:
       return [
-        Note(type: .c, octave: 0),
-        Note(type: .c, octave: 1),
-        Note(type: .c, octave: 1),
-        Note(type: .c, octave: 2),
-        Note(type: .c, octave: 2),
-        Note(type: .c, octave: 3),
+        Note(type: .bFlat, octave: 0),
+        Note(type: .eFlat, octave: 1),
+        Note(type: .aFlat, octave: 1),
+        Note(type: .dFlat, octave: 2),
+        Note(type: .gFlat, octave: 2),
+        Note(type: .b, octave: 3),
       ]
     case .fullStepDown4String:
       return [
@@ -831,6 +956,55 @@ public enum BassTuning: FretboardTuning {
         Note(type: .c, octave: 2),
         Note(type: .f, octave: 2)
       ]
+    case .eadgcf6String:
+      return [
+        Note(type: .e, octave: 0),
+        Note(type: .a, octave: 1),
+        Note(type: .d, octave: 1),
+        Note(type: .g, octave: 2),
+        Note(type: .c, octave: 2),
+        Note(type: .f, octave: 3),
+      ]
+    case .fbeadg6String:
+      return [
+        Note(type: .gFlat, octave: 0),
+        Note(type: .b, octave: 1),
+        Note(type: .e, octave: 1),
+        Note(type: .a, octave: 2),
+        Note(type: .d, octave: 2),
+        Note(type: .g, octave: 3),
+      ]
+    case .standard7String:
+      return [
+        Note(type: .b, octave: 0),
+        Note(type: .e, octave: 1),
+        Note(type: .a, octave: 1),
+        Note(type: .d, octave: 2),
+        Note(type: .g, octave: 2),
+        Note(type: .d, octave: 3),
+        Note(type: .c, octave: 3),
+      ]
+    case .fbeadgc7String:
+      return [
+        Note(type: .gFlat, octave: 0),
+        Note(type: .b, octave: 1),
+        Note(type: .e, octave: 1),
+        Note(type: .a, octave: 2),
+        Note(type: .d, octave: 2),
+        Note(type: .g, octave: 3),
+        Note(type: .c, octave: 3),
+      ]
+    case .standard8String:
+      return [
+        Note(type: .gFlat, octave: 0),
+        Note(type: .b, octave: 0),
+        Note(type: .e, octave: 1),
+        Note(type: .a, octave: 1),
+        Note(type: .d, octave: 2),
+        Note(type: .g, octave: 2),
+        Note(type: .c, octave: 3),
+        Note(type: .f, octave: 3),
+      ]
     }
   }
 
@@ -842,8 +1016,26 @@ public enum BassTuning: FretboardTuning {
       return "5 String Standard"
     case .standard6String:
       return "6 String Standard"
+    case .standard7String:
+      return "7 String standard"
+    case .standard8String:
+      return "8 String Standard"
     case .dropD4String:
       return "4 String Drop D"
+    case .dropB4String:
+      return "4 String Drop B"
+    case .openA4String:
+      return "4 String Open A"
+    case .openE4String:
+      return "4 String Open E"
+    case .e7sus44string:
+      return "4 String E7sus4"
+    case .gsus44String:
+      return "4 String Gsus4"
+    case .tenor4String:
+      return "4 String Tenor"
+    case .piccolo4String:
+      return "4 String Piccolo"
     case .halfStepDown4String:
       return "4 String Half Step Down"
     case .halfStepDown5String:
@@ -854,8 +1046,40 @@ public enum BassTuning: FretboardTuning {
       return "4 String Full Step Down"
     case .fullStepDown5String:
       return "5 String Full Step Down"
+    case .eadgcf6String:
+      return "6 String EADGCF"
+    case .fbeadg6String:
+      return "6 String F#BEADG"
+    case .fbeadgc7String:
+      return "7 String F#BEADGC"
     }
   }
+}
+
+extension BassTuning {
+  public static let all: [BassTuning] = [
+    .standard4String,
+    .standard5String,
+    .standard6String,
+    .standard7String,
+    .standard8String,
+    .dropD4String,
+    .dropB4String,
+    .openA4String,
+    .openE4String,
+    .e7sus44string,
+    .gsus44String,
+    .tenor4String,
+    .piccolo4String,
+    .halfStepDown4String,
+    .halfStepDown5String,
+    .halfStepDown6String,
+    .fullStepDown4String,
+    .fullStepDown5String,
+    .eadgcf6String,
+    .fbeadg6String,
+    .fbeadgc7String,
+  ]
 }
 
 // MARK: UkeleleTuning
@@ -912,6 +1136,15 @@ public enum UkeleleTuning: FretboardTuning {
       return "Tenor"
     }
   }
+}
+
+extension UkeleleTuning {
+  public static let all: [UkeleleTuning] = [
+    .standard,
+    .soprano,
+    .baritone,
+    .tenor
+  ]
 }
 
 // MARK: CustomTuning
