@@ -108,7 +108,8 @@ Rendering note names on pressed notes and optional.
 Also rendering fret numbers and strings names are optional too.  
 See the properties of `FretboardView`.
 
-### FretBud
+FretBud
+----
 
 This library is used in my iOS/tvOS app [FretBud](https://itunes.apple.com/us/app/fretbud-chord-scales-for-guitar-bass-and-more/id1234224249?mt=8), check it out!  
   
