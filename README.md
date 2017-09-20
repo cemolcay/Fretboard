@@ -107,3 +107,8 @@ You could change the colors of fret numbers, string names, notes from code or st
 Rendering note names on pressed notes and optional.  
 Also rendering fret numbers and strings names are optional too.  
 See the properties of `FretboardView`.
+
+### FretBud
+
+This library used in my iOS/tvOS app FretBud, check it out!  
+[![alt tag](https://linkmaker.itunes.apple.com/assets/shared/badges/en-us/appstore-lrg.svg)](https://itunes.apple.com/us/app/fretbud-chord-scales-for-guitar-bass-and-more/id1234224249?mt=8)
