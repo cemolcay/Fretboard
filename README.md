@@ -110,5 +110,6 @@ See the properties of `FretboardView`.
 
 ### FretBud
 
-This library used in my iOS/tvOS app FretBud, check it out!  
+This library is used in my iOS/tvOS app [FretBud](https://itunes.apple.com/us/app/fretbud-chord-scales-for-guitar-bass-and-more/id1234224249?mt=8), check it out!  
+  
 [![alt tag](https://linkmaker.itunes.apple.com/assets/shared/badges/en-us/appstore-lrg.svg)](https://itunes.apple.com/us/app/fretbud-chord-scales-for-guitar-bass-and-more/id1234224249?mt=8)
