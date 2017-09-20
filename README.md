@@ -50,7 +50,7 @@ Create a `FretboardView`, subclass of `UIView` with code or from storyboard.
 Fretboard uses [`MusicTheory`](https://github.com/cemolcay/MusicTheory) library to render scales, chords or notes.  
 You need to select/unselect notes, chords or scales on `fretboard` property of your `FretboardView` instance.  
 
-```
+``` swift
 let chord = Chord(type: .maj, key: .a)
 fretboardView?.fretboard.select(chord: chord)
 
@@ -69,11 +69,11 @@ I recommend 3, 4 or 5 frets to use that feature.
 
 ### Tuning
 
-Fretboard has a neat tuning property which is a `FretboardTuning` protocol, lets you define strings and their reprented notes on fretboard.  
+Fretboard has a neat tuning property which is a `FretboardTuning` protocol, lets you define strings and their represented notes on fretboard.  
 It has a bunch of premade tunings in `GuitarTuning`, `BassTuning` and `UkeleleTuning` enums.  
 Also, you can define custom tunings with `CustomTuning` struct with custom string count as well.
 
-```
+``` swift
 let tuning = CustomTuning(
   strings: [
     Note(type: .g, octave: 2),
@@ -89,7 +89,7 @@ fretboardView?.fretboard.tuning = tuning
 
 You could render fretboard either horizontal or vertical with `direction` property on fretboard of type `FretboardDirection`.
 
-```
+``` swift
 freboardView?.fretboard.direction = .horizontal
 freboardView?.fretboard.direction = .vertical
 ```
@@ -97,7 +97,7 @@ freboardView?.fretboard.direction = .vertical
 ### Frets 
 
 You could render any range of fretboard with `startIndex` and `count` properties on fretboard.  
-`startIndex` is the start fret and 0 is open string, defaults 0.  
+`startIndex` is the starting fret and 0 is open string, defaults 0.  
 `count` is the fret count and defaults 5.
 
 ### Customisation
