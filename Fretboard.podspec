@@ -18,6 +18,7 @@ Pod::Spec.new do |s|
   s.name         = "Fretboard"
   s.version      = "0.0.2"
   s.summary      = "Customisable guitar fretboard view for iOS, tvOS and macOS with CoreGraphics"
+  s.swift_version = "4.2"
 
   # This description is used to generate tags and improve search results.
   #   * Think: What does it do? Why did you write it? What is the focus?
@@ -77,14 +78,14 @@ Create a `FretboardView`, subclass of `UIView` with code or from storyboard.
 Fretboard uses [`MusicTheory`](https://github.com/cemolcay/MusicTheory) library to render scales, chords or notes.
 You need to select/unselect notes, chords or scales on `fretboard` property of your `FretboardView` instance.
 
-```
-let chord = Chord(type: .maj, key: .a)
+``` swift
+let chord = Chord(type: ChordType(third: .major), key: Key(type: .a))
 fretboardView?.fretboard.select(chord: chord)
 
-let scale = Scale(type: .major, key: .e)
+let scale = Scale(type: .major, key: Key(type: .e, accidental: .flat))
 fretboardView?.fretboard.select(scale: scale)
 
-let note = Note(type: .a, octave: 2)
+let note = Pitch(key: Key(type: .a), octave: 2)
 fretboardView?.fretboard.select(note: note)
 
 fretboardView?.fretboard.unselect(note: note)
@@ -96,17 +97,17 @@ I recommend 3, 4 or 5 frets to use that feature.
 
 ### Tuning
 
-Fretboard has a neat tuning property which is a `FretboardTuning` protocol, lets you define strings and their reprented notes on fretboard.
+Fretboard has a neat tuning property which is a `FretboardTuning` protocol, lets you define strings and their represented notes on fretboard.
 It has a bunch of premade tunings in `GuitarTuning`, `BassTuning` and `UkeleleTuning` enums.
 Also, you can define custom tunings with `CustomTuning` struct with custom string count as well.
 
-```
+``` swift
 let tuning = CustomTuning(
 strings: [
-Note(type: .g, octave: 2),
-Note(type: .d, octave: 2),
-Note(type: .a, octave: 1),
-Note(type: .e, octave: 1)
+Pitch(key: Key(type: .g), octave: 2),
+Pitch(key: Key(type: .d), octave: 2),
+Pitch(key: Key(type: .a), octave: 1),
+Pitch(key: Key(type: .e), octave: 1)
 ],
 description: "My Custom Tuning")
 fretboardView?.fretboard.tuning = tuning
@@ -116,7 +117,7 @@ fretboardView?.fretboard.tuning = tuning
 
 You could render fretboard either horizontal or vertical with `direction` property on fretboard of type `FretboardDirection`.
 
-```
+``` swift
 freboardView?.fretboard.direction = .horizontal
 freboardView?.fretboard.direction = .vertical
 ```
@@ -124,7 +125,7 @@ freboardView?.fretboard.direction = .vertical
 ### Frets
 
 You could render any range of fretboard with `startIndex` and `count` properties on fretboard.
-`startIndex` is the start fret and 0 is open string, defaults 0.
+`startIndex` is the starting fret and 0 is open string, defaults 0.
 `count` is the fret count and defaults 5.
 
 ### Customisation
@@ -134,6 +135,24 @@ You could change the colors of fret numbers, string names, notes from code or st
 Rendering note names on pressed notes and optional.
 Also rendering fret numbers and strings names are optional too.
 See the properties of `FretboardView`.
+
+### FretboardScrollView
+
+There is also a scroll view you can use in your iOS/tvOS/macOS apps that you can scroll your fretboard inside it. It has a `FretboardView` instance you can customise your fretboard directly.
+
+``` swift
+@IBOutlet weak var scrollView: FretboardScrollView?
+scrollView?.fretboardView.fretStartIndex = appState.fretStartIndex
+scrollView?.fretboardView.fretCount = appState.fretCount
+scrollView?.fretboardView.fretboard.tuning = appState.tuning.tuning
+```
+
+FretBud
+----
+
+This library is used in my iOS/tvOS app [FretBud](https://itunes.apple.com/us/app/fretbud-chord-scales-for-guitar-bass-and-more/id1234224249?mt=8), check it out!
+
+[![alt tag](https://linkmaker.itunes.apple.com/assets/shared/badges/en-us/appstore-lrg.svg)](https://itunes.apple.com/us/app/fretbud-chord-scales-for-guitar-bass-and-more/id1234224249?mt=8)
 DESC
 
   s.homepage     = "https://github.com/cemolcay/Fretboard"
