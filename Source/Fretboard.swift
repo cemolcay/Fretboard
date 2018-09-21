@@ -31,7 +31,7 @@ public func ==(left: FretboardNote?, right: FretboardNote?) -> Bool {
 /// Describes a note in fretboard.
 public class FretboardNote {
   /// Note that fretboard has.
-  public var note: Note
+  public var note: Pitch
 
   /// Index of fret on fretboard.
   public var fretIndex: Int
@@ -45,7 +45,7 @@ public class FretboardNote {
   /// Initilizes with note value.
   ///
   /// - Parameter note: Note on fretboard.
-  public init(note: Note, fretIndex: Int, stringIndex: Int) {
+  public init(note: Pitch, fretIndex: Int, stringIndex: Int) {
     self.note = note
     self.fretIndex = fretIndex
     self.stringIndex = stringIndex
@@ -165,13 +165,13 @@ public class Fretboard {
   /// Returns tuned strings by its direction.
   /// Left to right higher pitches in vertical direction.
   /// Bottom to top higer pitches in horizontal direction.
-  var strings: [Note] {
+  var strings: [Pitch] {
     return direction == .horizontal ? tuning.strings.reversed() : tuning.strings
   }
 
   /// Returns sorted octave range in fretboard.
   public var octaves: [Int] {
-    return Set<Int>(notes.flatMap({ $0 }).map({ $0.note.octave })).sorted()
+    return Set<Int>(notes.compactMap({ $0 }).map({ $0.note.octave })).sorted()
   }
 
   // MARK: Note Selection
@@ -179,7 +179,7 @@ public class Fretboard {
   /// Marks selected the notes in fretboard.
   ///
   /// - Parameter note: To be selected note in fretboard.
-  public func select(note: Note) {
+  public func select(note: Pitch) {
     notes.filter({ $0.note == note }).forEach({ $0.isSelected = true })
     delegate?.fretboad(self, didSelectedNotesChange: notes)
   }
@@ -187,7 +187,7 @@ public class Fretboard {
   /// Marks the notes selected in fretboard
   ///
   /// - Parameter notes: Notes to be selected.
-  public func select(notes: [Note]) {
+  public func select(notes: [Pitch]) {
     let hasNote: (FretboardNote) -> Bool = { fret in
       return notes.contains(where: { $0 == fret.note })
     }
@@ -200,8 +200,8 @@ public class Fretboard {
   ///
   /// - Parameter chord: To be selected notes of chord in fretboard.
   public func select(chord: Chord) {
-    let notes = chord.notes(octaves: octaves)
-    let hasNote: (Note) -> Bool = { note in
+    let notes = chord.pitches(octaves: octaves)
+    let hasNote: (Pitch) -> Bool = { note in
       return notes.contains(where: { $0 == note })
     }
 
@@ -213,8 +213,8 @@ public class Fretboard {
   ///
   /// - Parameter scale: To be selected notes of scale in fretboard.
   public func select(scale: Scale) {
-    let notes = scale.notes(octaves: octaves)
-    let hasNote: (Note) -> Bool = { note in
+    let notes = scale.pitches(octaves: octaves)
+    let hasNote: (Pitch) -> Bool = { note in
       return notes.contains(where: { $0 == note })
     }
 
@@ -225,7 +225,7 @@ public class Fretboard {
   /// Marks unselect the notes in fretboard if its already selected.
   ///
   /// - Parameter note: To be unselected note in fretboard.
-  public func unselect(note: Note) {
+  public func unselect(note: Pitch) {
     notes.filter({ $0.note == note }).forEach({ $0.isSelected = false })
     delegate?.fretboad(self, didSelectedNotesChange: notes)
   }

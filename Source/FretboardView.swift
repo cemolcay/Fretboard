@@ -25,7 +25,7 @@ public class FretLabel: FRView {
   #if os(iOS) || os(tvOS)
   public override init(frame: CGRect) {
     super.init(frame: frame)
-    textLayer.alignmentMode = kCAAlignmentCenter
+    textLayer.alignmentMode = CATextLayerAlignmentMode.center
     textLayer.contentsScale = UIScreen.main.scale
     layer.addSublayer(textLayer)
   }
@@ -33,8 +33,8 @@ public class FretLabel: FRView {
   public override init(frame frameRect: NSRect) {
     super.init(frame: frameRect)
     wantsLayer = true
-    textLayer.alignmentMode = kCAAlignmentCenter
-    textLayer.contentsScale = NSScreen.main()?.backingScaleFactor ?? 1
+    textLayer.alignmentMode = CATextLayerAlignmentMode.center
+    textLayer.contentsScale = NSScreen.main?.backingScaleFactor ?? 1
     layer?.addSublayer(textLayer)
   }
   #endif
@@ -117,7 +117,7 @@ public class FretView: FRView {
   }
 
   required public init?(coder: NSCoder) {
-    note = FretboardNote(note: Note(midiNote: 0), fretIndex: 0, stringIndex: 0)
+    note = FretboardNote(note: Pitch(midiNote: 0), fretIndex: 0, stringIndex: 0)
     super.init(coder: coder)
     setup()
   }
@@ -151,7 +151,7 @@ public class FretView: FRView {
     #if os(iOS) || os(tvOS)
       textLayer.contentsScale = UIScreen.main.scale
     #elseif os(OSX)
-      textLayer.contentsScale = NSScreen.main()?.backingScaleFactor ?? 1
+      textLayer.contentsScale = NSScreen.main?.backingScaleFactor ?? 1
     #endif
   }
 
@@ -370,13 +370,13 @@ public class FretView: FRView {
 
     // TextLayer
     let noteText = NSAttributedString(
-      string: "\(note.note.type)",
+      string: "\(note.note.key)",
       attributes: [
-        NSForegroundColorAttributeName: textColor,
-        NSFontAttributeName: FRFont.systemFont(ofSize: noteSize / 2)
+        NSAttributedString.Key.foregroundColor: textColor,
+        NSAttributedString.Key.font: FRFont.systemFont(ofSize: noteSize / 2)
       ])
 
-    textLayer.alignmentMode = kCAAlignmentCenter
+    textLayer.alignmentMode = CATextLayerAlignmentMode.center
     textLayer.string = isDrawSelectedNoteText && note.isSelected ? noteText : nil
     textLayer.frame = layer.bounds
   }
@@ -549,10 +549,10 @@ public class FretboardView: FRView, FretboardDelegate {
       }
 
       label.textLayer.string = NSAttributedString(
-        string: "\(fretboard.strings[index].type)",
+        string: "\(fretboard.strings[index].key)",
         attributes: [
-          NSForegroundColorAttributeName: stringLabelColor,
-          NSFontAttributeName: FRFont.systemFont(ofSize: (min(stringLabelSize.width, stringLabelSize.height) * 2) / 3)
+          NSAttributedString.Key.foregroundColor: stringLabelColor,
+          NSAttributedString.Key.font: FRFont.systemFont(ofSize: (min(stringLabelSize.width, stringLabelSize.height) * 2) / 3)
         ])
       label.frame = CGRect(origin: position, size: stringLabelSize)
     }
@@ -580,8 +580,8 @@ public class FretboardView: FRView, FretboardDelegate {
         label.textLayer.string = NSAttributedString(
           string: "\(fretboard.startIndex + index)",
           attributes: [
-            NSForegroundColorAttributeName: fretLabelColor,
-            NSFontAttributeName: FRFont.systemFont(ofSize: (min(fretLabelSize.width, fretLabelSize.height) * 2) / 3)
+            NSAttributedString.Key.foregroundColor: fretLabelColor,
+            NSAttributedString.Key.font: FRFont.systemFont(ofSize: (min(fretLabelSize.width, fretLabelSize.height) * 2) / 3)
           ])
       }
       label.frame = CGRect(origin: position, size: fretLabelSize)

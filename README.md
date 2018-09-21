@@ -27,7 +27,7 @@ Demo
 Requierments
 ----
 
-* Swift 3.0+
+* Swift 4.0+
 * iOS 8.0+
 * tvOS 9.0+
 * macOS 10.9+
@@ -51,13 +51,13 @@ Fretboard uses [`MusicTheory`](https://github.com/cemolcay/MusicTheory) library 
 You need to select/unselect notes, chords or scales on `fretboard` property of your `FretboardView` instance.  
 
 ``` swift
-let chord = Chord(type: .maj, key: .a)
+let chord = Chord(type: ChordType(third: .major), key: Key(type: .a))
 fretboardView?.fretboard.select(chord: chord)
 
-let scale = Scale(type: .major, key: .e)
+let scale = Scale(type: .major, key: Key(type: .e, accidental: .flat))
 fretboardView?.fretboard.select(scale: scale)
 
-let note = Note(type: .a, octave: 2)
+let note = Pitch(key: Key(type: .a), octave: 2)
 fretboardView?.fretboard.select(note: note)
 
 fretboardView?.fretboard.unselect(note: note)
@@ -76,10 +76,10 @@ Also, you can define custom tunings with `CustomTuning` struct with custom strin
 ``` swift
 let tuning = CustomTuning(
   strings: [
-    Note(type: .g, octave: 2),
-    Note(type: .d, octave: 2),
-    Note(type: .a, octave: 1),
-    Note(type: .e, octave: 1)
+    Pitch(key: Key(type: .g), octave: 2),
+    Pitch(key: Key(type: .d), octave: 2),
+    Pitch(key: Key(type: .a), octave: 1),
+    Pitch(key: Key(type: .e), octave: 1)
   ], 
   description: "My Custom Tuning")
 fretboardView?.fretboard.tuning = tuning
@@ -107,6 +107,17 @@ You could change the colors of fret numbers, string names, notes from code or st
 Rendering note names on pressed notes and optional.  
 Also rendering fret numbers and strings names are optional too.  
 See the properties of `FretboardView`.
+
+### FretboardScrollView
+
+There is also a scroll view you can use in your iOS/tvOS/macOS apps that you can scroll your fretboard inside it. It has a `FretboardView` instance you can customise your fretboard directly.
+
+``` swift
+@IBOutlet weak var scrollView: FretboardScrollView?
+scrollView?.fretboardView.fretStartIndex = appState.fretStartIndex
+scrollView?.fretboardView.fretCount = appState.fretCount
+scrollView?.fretboardView.fretboard.tuning = appState.tuning.tuning
+```
 
 FretBud
 ----

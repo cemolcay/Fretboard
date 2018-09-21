@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "Fretboard"
-  s.version      = "0.0.1"
+  s.version      = "0.0.2"
   s.summary      = "Customisable guitar fretboard view for iOS, tvOS and macOS with CoreGraphics"
 
   # This description is used to generate tags and improve search results.
@@ -54,7 +54,7 @@ Demo
 Requierments
 ----
 
-* Swift 3.0+
+* Swift 4.0+
 * iOS 8.0+
 * tvOS 9.0+
 * macOS 10.9+

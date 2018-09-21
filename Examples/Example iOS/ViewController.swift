@@ -20,7 +20,7 @@ class ViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
 
-    let chord = Chord(type: .maj, key: .a)
+    let chord = Chord(type: ChordType(third: .major), key: Key(type: .a))
     fretboardView?.fretboard.select(chord: chord)
   }
 }

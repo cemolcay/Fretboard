@@ -7,9 +7,9 @@
 //
 
 #if os(iOS) || os(tvOS)
-  import UIKit
+import UIKit
 #elseif os(OSX)
-  import AppKit
+import AppKit
 #endif
 import MusicTheorySwift
 
@@ -19,7 +19,7 @@ import MusicTheorySwift
 public protocol FretboardTuning: CustomStringConvertible {
 
   /// Open position notes of strings on fretboard. From top to down in horizontal fashion.
-  var strings: [Note] { get }
+  var strings: [Pitch] { get }
 }
 
 // MARK: - GuitarTuning
@@ -86,537 +86,537 @@ public enum GuitarTuning: FretboardTuning {
   case mandoguitar
   case rustyCage
 
-  public var strings: [Note] {
+  public var strings: [Pitch] {
     switch self {
     case .standard:
       return [
-        Note(type: .e, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .e, octave: 4)
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4)
       ]
     case .dropD:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .e, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4)
       ]
     case .halfStepDown:
       return [
-        Note(type: .eFlat, octave: 2),
-        Note(type: .aFlat, octave: 2),
-        Note(type: .dFlat, octave: 3),
-        Note(type: .gFlat, octave: 3),
-        Note(type: .bFlat, octave: 3),
-        Note(type: .eFlat, octave: 4)
+        Pitch(key: Key(type: .e, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .flat), octave: 4)
       ]
     case .fullStepDown:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .c, octave: 3),
-        Note(type: .f, octave: 3),
-        Note(type: .a, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .oneAndHalfStepDown:
       return [
-        Note(type: .dFlat, octave: 2),
-        Note(type: .gFlat, octave: 2),
-        Note(type: .b, octave: 2),
-        Note(type: .e, octave: 3),
-        Note(type: .aFlat, octave: 3),
-        Note(type: .dFlat, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 4)
       ]
     case .doubleDropD:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .dropC:
       return [
-        Note(type: .c, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .c, octave: 3),
-        Note(type: .f, octave: 3),
-        Note(type: .a, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .dropDFlat:
       return [
-        Note(type: .dFlat, octave: 2),
-        Note(type: .aFlat, octave: 2),
-        Note(type: .dFlat, octave: 3),
-        Note(type: .gFlat, octave: 3),
-        Note(type: .bFlat, octave: 3),
-        Note(type: .eFlat, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .flat), octave: 4)
       ]
     case .dropB:
       return [
-        Note(type: .b, octave: 1),
-        Note(type: .gFlat, octave: 2),
-        Note(type: .b, octave: 2),
-        Note(type: .e, octave: 3),
-        Note(type: .aFlat, octave: 3),
-        Note(type: .dFlat, octave: 4)
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 4)
       ]
     case .dropBFlat:
       return [
-        Note(type: .bFlat, octave: 1),
-        Note(type: .f, octave: 2),
-        Note(type: .bFlat, octave: 2),
-        Note(type: .eFlat, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .c, octave: 4)
+        Pitch(key: Key(type: .b, accidental: .flat), octave: 1),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .b, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .e, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4)
       ]
     case .dropA:
       return [
-        Note(type: .a, octave: 1),
-        Note(type: .e, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .gFlat, octave: 3),
-        Note(type: .b, octave: 3)
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3)
       ]
     case .openD:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .gFlat, octave: 3),
-        Note(type: .a, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .openDMinor:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .f, octave: 3),
-        Note(type: .a, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .openG:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .openGMinor:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .bFlat, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .openC:
       return [
-        Note(type: .c, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .c, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .e, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4)
       ]
     case .openDFlat:
       return [
-        Note(type: .dFlat, octave: 2),
-        Note(type: .gFlat, octave: 2),
-        Note(type: .b, octave: 3),
-        Note(type: .e, octave: 3),
-        Note(type: .aFlat, octave: 3),
-        Note(type: .dFlat, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 4)
       ]
     case .openCMinor:
       return [
-        Note(type: .c, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .c, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .eFlat, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .e, accidental: .flat), octave: 4)
       ]
     case .openE7:
       return [
-        Note(type: .e, octave: 2),
-        Note(type: .aFlat, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .e, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .e, octave: 4)
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4)
       ]
     case .openEMinor7:
       return [
-        Note(type: .e, octave: 2),
-        Note(type: .b, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .e, octave: 4)
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4)
       ]
     case .openGMajor7:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .gFlat, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .openAMinor:
       return [
-        Note(type: .e, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .e, octave: 3),
-        Note(type: .a, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .e, octave: 4)
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4)
       ]
     case .openAMinor7:
       return [
-        Note(type: .e, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .e, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .e, octave: 4)
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4)
       ]
     case .openE:
       return [
-        Note(type: .e, octave: 2),
-        Note(type: .b, octave: 2),
-        Note(type: .e, octave: 3),
-        Note(type: .aFlat, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .e, octave: 4)
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4)
       ]
     case .openA:
       return [
-        Note(type: .e, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .dFlat, octave: 3),
-        Note(type: .e, octave: 3),
-        Note(type: .a, octave: 3),
-        Note(type: .e, octave: 4)
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4)
       ]
     case .c:
       return [
-        Note(type: .c, octave: 2),
-        Note(type: .f, octave: 2),
-        Note(type: .bFlat, octave: 2),
-        Note(type: .eFlat, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .c, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .b, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .e, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4)
       ]
     case .dFlat:
       return [
-        Note(type: .dFlat, octave: 2),
-        Note(type: .gFlat, octave: 2),
-        Note(type: .b, octave: 2),
-        Note(type: .e, octave: 3),
-        Note(type: .aFlat, octave: 3),
-        Note(type: .dFlat, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 4)
       ]
     case .bFlat:
       return [
-        Note(type: .bFlat, octave: 1),
-        Note(type: .eFlat, octave: 2),
-        Note(type: .aFlat, octave: 2),
-        Note(type: .dFlat, octave: 3),
-        Note(type: .f, octave: 3),
-        Note(type: .bFlat, octave: 3)
+        Pitch(key: Key(type: .b, accidental: .flat), octave: 1),
+        Pitch(key: Key(type: .e, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .flat), octave: 3)
       ]
     case .baritone:
       return [
-        Note(type: .a, octave: 1),
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .c, octave: 3),
-        Note(type: .e, octave: 3),
-        Note(type: .a, octave: 3)
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3)
       ]
     case .dadddd:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .d, octave: 3),
-        Note(type: .d, octave: 4),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .cgdgbd:
       return [
-        Note(type: .c, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .cgdgbe:
       return [
-        Note(type: .c, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .e, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4)
       ]
     case .dadead:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .e, octave: 3),
-        Note(type: .a, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .dgdgad:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .a, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .openDSus2:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .a, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .openGSus2:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .g6:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .e, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4)
       ]
     case .modalG:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .overtone:
       return [
-        Note(type: .c, octave: 3),
-        Note(type: .e, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .bFlat, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .pentatonic:
       return [
-        Note(type: .a, octave: 2),
-        Note(type: .c, octave: 3),
-        Note(type: .d, octave: 3),
-        Note(type: .e, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .a, octave: 4)
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 4)
       ]
     case .minorThriad:
       return [
-        Note(type: .c, octave: 3),
-        Note(type: .eFlat, octave: 3),
-        Note(type: .gFlat, octave: 3),
-        Note(type: .a, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .eFlat, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .e, accidental: .flat), octave: 4)
       ]
     case .majorThriad:
       return [
-        Note(type: .c, octave: 3),
-        Note(type: .e, octave: 3),
-        Note(type: .aFlat, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .e, octave: 4),
-        Note(type: .aFlat, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 4)
       ]
     case .allFourths:
       return [
-        Note(type: .e, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .f, octave: 4)
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 4)
       ]
     case .agumentedFourths:
       return [
-        Note(type: .c, octave: 2),
-        Note(type: .gFlat, octave: 2),
-        Note(type: .c, octave: 3),
-        Note(type: .gFlat, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .gFlat, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 4)
       ]
     case .slowMotion:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .f, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .admiral:
       return [
-        Note(type: .c, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .c, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4)
       ]
     case .buzzard:
       return [
-        Note(type: .c, octave: 2),
-        Note(type: .f, octave: 2),
-        Note(type: .c, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .bFlat, octave: 3),
-        Note(type: .f, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 4)
       ]
     case .face:
       return [
-        Note(type: .c, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .a, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .fourAndTwenty:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .d, octave: 3),
-        Note(type: .a, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .ostrich:
       return [
-        Note(type: .d, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .d, octave: 3),
-        Note(type: .d, octave: 3),
-        Note(type: .d, octave: 4),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .capo200:
       return [
-        Note(type: .c, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .eFlat, octave: 3),
-        Note(type: .d, octave: 4),
-        Note(type: .eFlat, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .flat), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .e, accidental: .flat), octave: 4)
       ]
     case .balalaika:
       return [
-        Note(type: .e, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .e, octave: 3),
-        Note(type: .e, octave: 3),
-        Note(type: .a, octave: 3)
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3)
       ]
     case .charango:
       return [
-        Note(type: .g, octave: 2),
-        Note(type: .c, octave: 3),
-        Note(type: .e, octave: 3),
-        Note(type: .a, octave: 3),
-        Note(type: .e, octave: 4)
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4)
       ]
     case .citternOne:
       return [
-        Note(type: .c, octave: 2),
-        Note(type: .f, octave: 2),
-        Note(type: .c, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .citternTwo:
       return [
-        Note(type: .c, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .c, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .g, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 4)
       ]
     case .dobro:
       return [
-        Note(type: .g, octave: 2),
-        Note(type: .b, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .d, octave: 4)
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4)
       ]
     case .leftty:
       return [
-        Note(type: .e, octave: 4),
-        Note(type: .b, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .d, octave: 3),
-        Note(type: .a, octave: 2),
-        Note(type: .e, octave: 2)
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 2)
       ]
     case .mandoguitar:
       return [
-        Note(type: .c, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .a, octave: 3),
-        Note(type: .e, octave: 4),
-        Note(type: .b, octave: 4)
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 4)
       ]
     case .rustyCage:
       return [
-        Note(type: .b, octave: 1),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .e, octave: 4)
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4)
       ]
     }
   }
@@ -835,175 +835,175 @@ public enum BassTuning: FretboardTuning {
   case fbeadgc7String
   case standard8String
 
-  public var strings: [Note] {
+  public var strings: [Pitch] {
     switch self {
     case .standard4String:
       return [
-        Note(type: .e, octave: 1),
-        Note(type: .a, octave: 1),
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
       ]
     case .standard5String:
       return [
-        Note(type: .b, octave: 0),
-        Note(type: .e, octave: 1),
-        Note(type: .a, octave: 1),
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 0),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
       ]
     case .standard6String:
       return [
-        Note(type: .b, octave: 0),
-        Note(type: .e, octave: 1),
-        Note(type: .a, octave: 1),
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .c, octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 0),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
       ]
     case .dropD4String:
       return [
-        Note(type: .d, octave: 1),
-        Note(type: .a, octave: 1),
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
       ]
     case .dropB4String:
       return [
-        Note(type: .d, octave: 1),
-        Note(type: .a, octave: 1),
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
       ]
     case .openA4String:
       return [
-        Note(type: .e, octave: 1),
-        Note(type: .a, octave: 1),
-        Note(type: .e, octave: 2),
-        Note(type: .a, octave: 2),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
       ]
     case .openE4String:
       return [
-        Note(type: .e, octave: 1),
-        Note(type: .b, octave: 1),
-        Note(type: .e, octave: 2),
-        Note(type: .aFlat, octave: 2),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 2),
       ]
     case .e7sus44string:
       return [
-        Note(type: .b, octave: 1),
-        Note(type: .e, octave: 1),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 2),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
       ]
     case .gsus44String:
       return [
-        Note(type: .d, octave: 1),
-        Note(type: .a, octave: 1),
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
       ]
     case .tenor4String:
       return [
-        Note(type: .a, octave: 1),
-        Note(type: .d, octave: 1),
-        Note(type: .g, octave: 2),
-        Note(type: .c, octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
       ]
     case .piccolo4String:
       return [
-        Note(type: .e, octave: 2),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
       ]
     case .halfStepDown4String:
       return [
-        Note(type: .eFlat, octave: 1),
-        Note(type: .aFlat, octave: 1),
-        Note(type: .dFlat, octave: 2),
-        Note(type: .gFlat, octave: 2),
+        Pitch(key: Key(type: .e, accidental: .flat), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 1),
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 2),
       ]
     case .halfStepDown5String:
       return[
-        Note(type: .bFlat, octave: 0),
-        Note(type: .eFlat, octave: 1),
-        Note(type: .aFlat, octave: 1),
-        Note(type: .dFlat, octave: 2),
-        Note(type: .gFlat, octave: 2),
+        Pitch(key: Key(type: .b, accidental: .flat), octave: 0),
+        Pitch(key: Key(type: .e, accidental: .flat), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 1),
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 2),
       ]
     case .halfStepDown6String:
       return [
-        Note(type: .bFlat, octave: 0),
-        Note(type: .eFlat, octave: 1),
-        Note(type: .aFlat, octave: 1),
-        Note(type: .dFlat, octave: 2),
-        Note(type: .gFlat, octave: 2),
-        Note(type: .b, octave: 3),
+        Pitch(key: Key(type: .b, accidental: .flat), octave: 0),
+        Pitch(key: Key(type: .e, accidental: .flat), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .flat), octave: 1),
+        Pitch(key: Key(type: .d, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 2),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
       ]
     case .fullStepDown4String:
       return [
-        Note(type: .d, octave: 1),
-        Note(type: .g, octave: 1),
-        Note(type: .c, octave: 2),
-        Note(type: .f, octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 2),
       ]
     case .fullStepDown5String:
       return [
-        Note(type: .a, octave: 0),
-        Note(type: .d, octave: 1),
-        Note(type: .g, octave: 1),
-        Note(type: .c, octave: 2),
-        Note(type: .f, octave: 2)
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 0),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 2)
       ]
     case .eadgcf6String:
       return [
-        Note(type: .e, octave: 0),
-        Note(type: .a, octave: 1),
-        Note(type: .d, octave: 1),
-        Note(type: .g, octave: 2),
-        Note(type: .c, octave: 2),
-        Note(type: .f, octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 0),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 3),
       ]
     case .fbeadg6String:
       return [
-        Note(type: .gFlat, octave: 0),
-        Note(type: .b, octave: 1),
-        Note(type: .e, octave: 1),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 3),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 0),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
       ]
     case .standard7String:
       return [
-        Note(type: .b, octave: 0),
-        Note(type: .e, octave: 1),
-        Note(type: .a, octave: 1),
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .d, octave: 3),
-        Note(type: .c, octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 0),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
       ]
     case .fbeadgc7String:
       return [
-        Note(type: .gFlat, octave: 0),
-        Note(type: .b, octave: 1),
-        Note(type: .e, octave: 1),
-        Note(type: .a, octave: 2),
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 3),
-        Note(type: .c, octave: 3),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 0),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
       ]
     case .standard8String:
       return [
-        Note(type: .gFlat, octave: 0),
-        Note(type: .b, octave: 0),
-        Note(type: .e, octave: 1),
-        Note(type: .a, octave: 1),
-        Note(type: .d, octave: 2),
-        Note(type: .g, octave: 2),
-        Note(type: .c, octave: 3),
-        Note(type: .f, octave: 3),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 0),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 0),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 1),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 2),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .f, accidental: .natural), octave: 3),
       ]
     }
   }
@@ -1079,7 +1079,7 @@ extension BassTuning {
     .eadgcf6String,
     .fbeadg6String,
     .fbeadgc7String,
-  ]
+    ]
 }
 
 // MARK: UkeleleTuning
@@ -1091,35 +1091,35 @@ public enum UkeleleTuning: FretboardTuning {
   case baritone
   case tenor
 
-  public var strings: [Note] {
+  public var strings: [Pitch] {
     switch self {
     case .standard:
       return [
-        Note(type: .g, octave: 4),
-        Note(type: .c, octave: 4),
-        Note(type: .e, octave: 4),
-        Note(type: .a, octave: 4)
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 4)
       ]
     case .soprano:
       return [
-        Note(type: .a, octave: 4),
-        Note(type: .d, octave: 4),
-        Note(type: .gFlat, octave: 4),
-        Note(type: .b, octave: 4)
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .g, accidental: .flat), octave: 4),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 4)
       ]
     case .baritone:
       return [
-        Note(type: .d, octave: 3),
-        Note(type: .g, octave: 3),
-        Note(type: .b, octave: 3),
-        Note(type: .e, octave: 4)
+        Pitch(key: Key(type: .d, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .b, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4)
       ]
     case .tenor:
       return [
-        Note(type: .g, octave: 3),
-        Note(type: .c, octave: 4),
-        Note(type: .e, octave: 4),
-        Note(type: .a, octave: 4)
+        Pitch(key: Key(type: .g, accidental: .natural), octave: 3),
+        Pitch(key: Key(type: .c, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .e, accidental: .natural), octave: 4),
+        Pitch(key: Key(type: .a, accidental: .natural), octave: 4)
       ]
     }
   }
@@ -1151,10 +1151,10 @@ extension UkeleleTuning {
 
 /// Creates custom tuning with any number of string instrument.
 public struct CustomTuning: FretboardTuning {
-  public var strings: [Note]
+  public var strings: [Pitch]
   public var description: String
 
-  public init(strings: [Note], description: String) {
+  public init(strings: [Pitch], description: String) {
     self.strings = strings
     self.description = description
   }
