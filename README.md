@@ -1,7 +1,7 @@
 Fretboard
 ===
 
-Customisable guitar fretboard view for iOS, tvOS and macOS with CoreGraphics.
+Customizable guitar fretboard view for iOS, tvOS and macOS with CoreGraphics.
 
 Demo
 ----
@@ -24,7 +24,7 @@ Demo
 
 ![alt tag](https://github.com/cemolcay/Fretboard/blob/master/Examples/ib.png?raw=true)
 
-Requierments
+Requirements
 ----
 
 * Swift 4.0+
@@ -110,7 +110,7 @@ See the properties of `FretboardView`.
 
 ### FretboardScrollView
 
-There is also a scroll view you can use in your iOS/tvOS/macOS apps that you can scroll your fretboard inside it. It has a `FretboardView` instance you can customise your fretboard directly.
+There is also a scroll view you can use in your iOS/tvOS/macOS apps that you can scroll your fretboard inside it. It has a `FretboardView` instance you can customize your fretboard directly.
 
 ``` swift
 @IBOutlet weak var scrollView: FretboardScrollView?
