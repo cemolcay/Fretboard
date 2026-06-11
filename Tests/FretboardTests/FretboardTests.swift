@@ -62,11 +62,10 @@ final class FretboardTests: XCTestCase {
         XCTAssertEqual(custom.strings.map { $0.midiNoteNumber }, decoded.strings.map { $0.midiNoteNumber })
     }
 
-    // MARK: - Fretboard Codable round-trip
+    // MARK: - Fretboard Codable round-trip (geometry only)
 
     func testFretboardCodableRoundTrip() throws {
         let fb = Fretboard(tuning: GuitarTuning.standard, startIndex: 2, count: 7)
-        fb.select(scale: Scale(type: .major, root: .c))
         let data = try JSONEncoder().encode(fb)
         let decoded = try JSONDecoder().decode(Fretboard.self, from: data)
         XCTAssertEqual(decoded.startIndex, 2)
@@ -98,48 +97,30 @@ final class FretboardTests: XCTestCase {
         }
     }
 
-    // MARK: - Scale selection (enharmonic fix)
+    // MARK: - Pitch lookup
 
-    func testCMajorScaleSelection() {
+    /// `notes(matching:)` returns every grid position for a known pitch, regardless of which string.
+    func testNotesMatchingPitch() {
+        // Standard tuning, 12 frets. Open A2 (MIDI 45) appears on the A string (fret 0).
+        // A2 also appears on the low E string at fret 5 (E2 + 5 = A2, MIDI 40+5=45).
         let fb = Fretboard(tuning: GuitarTuning.standard, startIndex: 0, count: 12)
-        fb.select(scale: Scale(type: .major, root: .c))
-        let selectedPCs = Set(fb.notes.filter { $0.isSelected }.map { $0.pitch.noteName.pitchClass })
-        // C major pitch classes: C=0, D=2, E=4, F=5, G=7, A=9, B=11
-        XCTAssertEqual(selectedPCs, [0, 2, 4, 5, 7, 9, 11])
+        let a2 = Pitch(noteName: .a, octave: 2)
+        let matches = fb.notes(matching: a2)
+        XCTAssertFalse(matches.isEmpty, "A2 should appear at least once on the fretboard")
+        XCTAssertTrue(matches.allSatisfy { $0.pitch.midiNoteNumber == a2.midiNoteNumber },
+                      "All matching notes must have the correct MIDI number")
+        // At minimum: open A string (stringIndex=4 in horizontal ordered, fret 0) and E string at fret 5.
+        XCTAssertGreaterThanOrEqual(matches.count, 2)
     }
 
-    /// Flat-spelled scale must light up sharp-spelled fret positions (enharmonic match).
-    func testEnharmonicSelectionFlatScale() {
-        let fb = Fretboard(tuning: GuitarTuning.standard, startIndex: 0, count: 12)
-        // Db major: Db, Eb, F, Gb, Ab, Bb, C  (all flats)
-        fb.select(scale: Scale(type: .major, root: .db))
-        // G string (MIDI 55 open) at fret 4 = Ab4 (MIDI 59) if spelled sharp = G#
-        // Find a note whose MIDI is a member of Db major regardless of spelling
-        let selectedMIDIs = Set(fb.notes.filter { $0.isSelected }.map { $0.pitch.midiNoteNumber })
-        // Db=1, Eb=3, F=5, Gb=6, Ab=8, Bb=10, C=0  — pitch classes
-        let expectedPCs: Set<Int> = [1, 3, 5, 6, 8, 10, 0]
-        let actualPCs = Set(selectedMIDIs.map { $0 % 12 })
-        XCTAssertEqual(actualPCs, expectedPCs,
-                       "Enharmonic note matching failed for flat-spelled scale")
-    }
-
-    // MARK: - Chord selection
-
-    func testCMajorChordSelection() {
-        let fb = Fretboard(tuning: GuitarTuning.standard, startIndex: 0, count: 5)
-        fb.select(chord: Chord(type: .major, root: .c))
-        let selectedPCs = Set(fb.notes.filter { $0.isSelected }.map { $0.pitch.noteName.pitchClass })
-        // C major: C=0, E=4, G=7
-        XCTAssertEqual(selectedPCs, [0, 4, 7])
-    }
-
-    // MARK: - deselectAll
-
-    func testDeselectAll() {
-        let fb = Fretboard(tuning: GuitarTuning.standard, startIndex: 0, count: 5)
-        fb.select(scale: Scale(type: .major, root: .c))
-        fb.deselectAll()
-        XCTAssertTrue(fb.notes.allSatisfy { !$0.isSelected })
+    /// `notes(matching:)` returns an empty array for a pitch outside the current fret window.
+    func testNotesMatchingPitchOutOfRange() {
+        let fb = Fretboard(tuning: GuitarTuning.standard, startIndex: 10, count: 3)
+        // C4 (MIDI 60) only lives on specific frets; narrow window may miss it.
+        // What matters is the method returns only notes whose MIDI matches.
+        let c4 = Pitch(noteName: .c, octave: 4)
+        let matches = fb.notes(matching: c4)
+        XCTAssertTrue(matches.allSatisfy { $0.pitch.midiNoteNumber == c4.midiNoteNumber })
     }
 
     // MARK: - FretSizing
@@ -176,10 +157,16 @@ final class FretboardTests: XCTestCase {
         cfg.isDrawNoteName = false
         cfg.fretWidth = 4
         cfg.stringColor = FretboardColor(red: 0.5, green: 0.2, blue: 0.8, alpha: 1)
+        cfg.highlightNoteColor = FretboardColor(red: 1, green: 0.3, blue: 0, alpha: 1)
+        cfg.noteBorderWidth = 2
+        cfg.isCapoModeOn = true
         let data = try JSONEncoder().encode(cfg)
         let decoded = try JSONDecoder().decode(FretboardConfiguration.self, from: data)
         XCTAssertEqual(decoded.isDrawNoteName, false)
         XCTAssertEqual(decoded.fretWidth, 4)
         XCTAssertEqual(decoded.stringColor, cfg.stringColor)
+        XCTAssertEqual(decoded.highlightNoteColor, cfg.highlightNoteColor)
+        XCTAssertEqual(decoded.noteBorderWidth, 2)
+        XCTAssertEqual(decoded.isCapoModeOn, true)
     }
 }

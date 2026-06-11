@@ -21,7 +21,7 @@ let package = Package(
         .target(
             name: "Fretboard",
             dependencies: ["MusicTheory"],
-            path: "Sources/Fretboard"),
+            path: "Sources"),
         .testTarget(
             name: "FretboardTests",
             dependencies: ["Fretboard"],

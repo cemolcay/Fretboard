@@ -28,14 +28,15 @@ final class FretboardSceneWrapper: ObservableObject, FretboardSceneDelegate {
             tuning: GuitarTuning.standard,
             startIndex: 0,
             count: 12,
-            direction: .horizontal,
-            isChordModeOn: false,
-            isCapoOn: true
+            direction: .horizontal
         )
 
         var cfg = FretboardConfiguration()
         cfg.fretSizing = .fit
         cfg.noteColor = FretboardColor(red: 0.15, green: 0.6, blue: 0.45, alpha: 1)
+        cfg.highlightNoteColor = FretboardColor(red: 0.95, green: 0.35, blue: 0.1, alpha: 1)
+        cfg.noteBorderWidth = 1.5
+        cfg.noteBorderColor = FretboardColor(white: 0, alpha: 0.2)
         cfg.backgroundColor = FretboardColor(white: 0.97)
 
         let s = FretboardScene(fretboard: fb, configuration: cfg)
@@ -48,44 +49,56 @@ final class FretboardSceneWrapper: ObservableObject, FretboardSceneDelegate {
 
     func fretboardScene(_ scene: FretboardScene, noteOn note: FretboardNote) {
         lastNoteOn = "\(note.pitch)  (MIDI \(note.pitch.midiNoteNumber))"
+        // The scene already highlights the touched dot; wire your synth / MIDI output here.
     }
 
     func fretboardScene(_ scene: FretboardScene, noteOff note: FretboardNote) {
         lastNoteOff = "\(note.pitch)  (MIDI \(note.pitch.midiNoteNumber))"
     }
 
-    // MARK: Model mutations — always followed by scene.reload()
+    // MARK: Scale / chord — scene owns which dots are shown
 
-    func select(scale: Scale) {
-        fretboard.deselectAll()
-        fretboard.select(scale: scale)
-        scene.reload()
+    func show(scale: Scale) {
+        scene.clearNotes()
+        scene.show(scale: scale)
     }
 
-    func select(chord: Chord) {
-        fretboard.deselectAll()
-        fretboard.select(chord: chord)
-        scene.reload()
+    func show(chord: Chord) {
+        scene.clearNotes()
+        scene.show(chord: chord)
     }
 
     func clearSelection() {
-        fretboard.deselectAll()
-        scene.reload()
+        scene.clearNotes()
     }
 
+    // MARK: Live MIDI example
+    // Call highlightNote/unhighlightNote from your MIDI receiver — no reload needed.
+
+    func midiNoteOn(_ pitch: Pitch) {
+        scene.highlightNote(pitch)   // creates a transient dot if the note is off-scale
+    }
+
+    func midiNoteOff(_ pitch: Pitch) {
+        scene.unhighlightNote(pitch) // removes transient dots; dims shown dots
+    }
+
+    // MARK: Instrument / layout
+
     func setTuning(_ tuning: Tuning) {
-        fretboard.tuning = tuning
-        scene.reload()
+        fretboard.tuning = tuning    // didSet triggers scene.reload() automatically
     }
 
     func setDirection(_ direction: FretboardDirection) {
         fretboard.direction = direction
-        scene.reload()
     }
 
     func setFretSizing(_ sizing: FretSizing) {
         scene.configuration.fretSizing = sizing
-        scene.reload()
+    }
+
+    func toggleCapo() {
+        scene.configuration.isCapoModeOn.toggle()
     }
 }
 
@@ -111,9 +124,9 @@ struct FretboardView: View {
                     Group {
                         Text("Scales").font(.headline)
                         HStack {
-                            button("C Major")   { wrapper.select(scale: Scale(type: .major,        root: .c)) }
-                            button("A Minor")   { wrapper.select(scale: Scale(type: .naturalMinor, root: .a)) }
-                            button("G Blues")   { wrapper.select(scale: Scale(type: .blues,        root: .g)) }
+                            button("C Major")   { wrapper.show(scale: Scale(type: .major,        root: .c)) }
+                            button("A Minor")   { wrapper.show(scale: Scale(type: .naturalMinor, root: .a)) }
+                            button("G Blues")   { wrapper.show(scale: Scale(type: .blues,        root: .g)) }
                             button("Clear")     { wrapper.clearSelection() }
                         }
                     }
@@ -121,9 +134,23 @@ struct FretboardView: View {
                     Group {
                         Text("Chords").font(.headline)
                         HStack {
-                            button("G maj")  { wrapper.select(chord: Chord(type: .major,      root: .g)) }
-                            button("D min")  { wrapper.select(chord: Chord(type: .minor,      root: .d)) }
-                            button("E dom7") { wrapper.select(chord: Chord(type: .dominant7,  root: .e)) }
+                            button("G maj")  { wrapper.show(chord: Chord(type: .major,      root: .g)) }
+                            button("D min")  { wrapper.show(chord: Chord(type: .minor,      root: .d)) }
+                            button("E dom7") { wrapper.show(chord: Chord(type: .dominant7,  root: .e)) }
+                        }
+                    }
+
+                    Group {
+                        Text("Live MIDI simulation").font(.headline)
+                        Text("(In a real app these would fire from your MIDI receive handler)")
+                            .font(.caption).foregroundColor(.secondary)
+                        HStack {
+                            button("NoteOn C4")  { wrapper.midiNoteOn(Pitch(noteName: .c,  octave: 4)) }
+                            button("NoteOn F#3") { wrapper.midiNoteOn(Pitch(noteName: .gb, octave: 3)) }
+                            button("Off all") {
+                                wrapper.midiNoteOff(Pitch(noteName: .c,  octave: 4))
+                                wrapper.midiNoteOff(Pitch(noteName: .gb, octave: 3))
+                            }
                         }
                     }
 
@@ -148,10 +175,15 @@ struct FretboardView: View {
                     Group {
                         Text("Fret sizing").font(.headline)
                         HStack {
-                            button("Fit")      { wrapper.setFretSizing(.fit) }
-                            button("80 pt")    { wrapper.setFretSizing(.fixed(80)) }
-                            button("×0.12")    { wrapper.setFretSizing(.multiplier(0.12)) }
+                            button("Fit")   { wrapper.setFretSizing(.fit) }
+                            button("80 pt") { wrapper.setFretSizing(.fixed(80)) }
+                            button("×0.12") { wrapper.setFretSizing(.multiplier(0.12)) }
                         }
+                    }
+
+                    Group {
+                        Text("Capo mode").font(.headline)
+                        button("Toggle capo") { wrapper.toggleCapo() }
                     }
 
                     Divider()
@@ -185,6 +217,7 @@ extension FretboardSceneWrapper {
 
     func restoreState(from data: Data) throws {
         // Decode into a new Fretboard and hot-swap it into the scene.
+        // Note: shown dots are owned by the scene — you may want to re-show your scale/chord after this.
         let restored = try JSONDecoder().decode(Fretboard.self, from: data)
         scene.fretboard = restored   // triggers scene.reload() automatically
         objectWillChange.send()

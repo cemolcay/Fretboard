@@ -23,15 +23,12 @@ class FretboardViewController: UIViewController {
     // MARK: Model
 
     private let fretboard: Fretboard = {
-        let fb = Fretboard(
+        Fretboard(
             tuning: GuitarTuning.standard,
             startIndex: 0,
             count: 12,
-            direction: .horizontal,
-            isChordModeOn: false,
-            isCapoOn: true
+            direction: .horizontal
         )
-        return fb
     }()
 
     // MARK: Lifecycle
@@ -61,15 +58,17 @@ class FretboardViewController: UIViewController {
 
     private func setupScene() {
         var cfg = FretboardConfiguration()
-        cfg.fretSizing = .fit              // All 12 frets fill the scene width
+        cfg.fretSizing = .fit
         cfg.isDrawNoteName = true
         cfg.noteColor = FretboardColor(red: 0.2, green: 0.4, blue: 0.9, alpha: 1)
+        cfg.highlightNoteColor = FretboardColor(red: 0.95, green: 0.35, blue: 0.1, alpha: 1)
+        cfg.noteBorderWidth = 1.5
+        cfg.noteBorderColor = FretboardColor(white: 0, alpha: 0.2)
         cfg.stringColor = .darkGray
         cfg.backgroundColor = FretboardColor(white: 0.96)
 
         scene = FretboardScene(fretboard: fretboard, configuration: cfg)
         scene.noteDelegate = self
-
         skView.presentScene(scene)
     }
 
@@ -87,60 +86,55 @@ class FretboardViewController: UIViewController {
             stack.topAnchor.constraint(equalTo: skView.bottomAnchor, constant: 20),
         ])
 
-        // Scale selection
         for (title, action) in [
-            ("C Major",         #selector(selectCMajor)),
-            ("A Minor",         #selector(selectAMinor)),
-            ("G Major Chord",   #selector(selectGMajorChord)),
-            ("Clear",           #selector(clearSelection)),
-            ("Toggle Direction",#selector(toggleDirection)),
+            ("C Major Scale",    #selector(selectCMajor)),
+            ("A Minor Scale",    #selector(selectAMinor)),
+            ("G Major Chord",    #selector(selectGMajorChord)),
+            ("Clear",            #selector(clearNotes)),
+            ("Toggle Direction", #selector(toggleDirection)),
+            ("Toggle Capo Mode", #selector(toggleCapo)),
+            ("Drop D Tuning",    #selector(switchToDropD)),
         ] as [(String, Selector)] {
             let btn = UIButton(type: .system)
             btn.setTitle(title, for: .normal)
             btn.addTarget(self, action: action, for: .touchUpInside)
             stack.addArrangedSubview(btn)
         }
-
-        // Tuning picker
-        let tuningBtn = UIButton(type: .system)
-        tuningBtn.setTitle("Drop D", for: .normal)
-        tuningBtn.addTarget(self, action: #selector(switchToDropD), for: .touchUpInside)
-        stack.addArrangedSubview(tuningBtn)
     }
 
     // MARK: Actions
 
     @objc private func selectCMajor() {
-        fretboard.deselectAll()
-        fretboard.select(scale: Scale(type: .major, root: .c))
-        scene.reload()
+        scene.clearNotes()
+        scene.show(scale: Scale(type: .major, root: .c))
     }
 
     @objc private func selectAMinor() {
-        fretboard.deselectAll()
-        fretboard.select(scale: Scale(type: .naturalMinor, root: .a))
-        scene.reload()
+        scene.clearNotes()
+        scene.show(scale: Scale(type: .naturalMinor, root: .a))
     }
 
     @objc private func selectGMajorChord() {
-        fretboard.deselectAll()
-        fretboard.select(chord: Chord(type: .major, root: .g))
-        scene.reload()
+        scene.clearNotes()
+        scene.show(chord: Chord(type: .major, root: .g))
     }
 
-    @objc private func clearSelection() {
-        fretboard.deselectAll()
-        scene.reload()
+    @objc private func clearNotes() {
+        scene.clearNotes()
     }
 
     @objc private func toggleDirection() {
         fretboard.direction = fretboard.direction == .horizontal ? .vertical : .horizontal
-        scene.reload()
+        // didSet on fretboard.direction calls scene.reload() automatically.
+    }
+
+    @objc private func toggleCapo() {
+        scene.configuration.isCapoModeOn.toggle()
     }
 
     @objc private func switchToDropD() {
         fretboard.tuning = GuitarTuning.dropD
-        scene.reload()
+        // didSet on fretboard.tuning calls scene.reload() automatically.
     }
 }
 
@@ -150,6 +144,7 @@ extension FretboardViewController: FretboardSceneDelegate {
 
     func fretboardScene(_ scene: FretboardScene, noteOn note: FretboardNote) {
         // Connect to AVAudioEngine, CoreMIDI, or any synth here.
+        // The scene already highlights the dot; wire playback here.
         // note.pitch.midiNoteNumber gives you the MIDI pitch (0–127).
         // note.pitch.frequency()    gives the equal-tempered frequency in Hz.
         print("noteOn  \(note.pitch) — MIDI \(note.pitch.midiNoteNumber)")
@@ -157,6 +152,21 @@ extension FretboardViewController: FretboardSceneDelegate {
 
     func fretboardScene(_ scene: FretboardScene, noteOff note: FretboardNote) {
         print("noteOff \(note.pitch) — MIDI \(note.pitch.midiNoteNumber)")
+    }
+}
+
+// MARK: - Live MIDI example
+
+extension FretboardViewController {
+
+    /// Call from your CoreMIDI / MIDI receive handler when a note-on arrives.
+    func receiveMIDINoteOn(pitch: Pitch) {
+        scene.highlightNote(pitch)   // creates a transient dot if the note is off-scale
+    }
+
+    /// Call from your CoreMIDI / MIDI receive handler when a note-off arrives.
+    func receiveMIDINoteOff(pitch: Pitch) {
+        scene.unhighlightNote(pitch) // removes transient dots; dims shown dots
     }
 }
 
@@ -170,6 +180,8 @@ extension FretboardViewController {
 
     func loadFretboard(from data: Data) throws {
         // Replace the scene's model with a decoded one.
+        // Note: shown dots are owned by the scene — you may want to re-show your
+        // scale/chord after this using show(scale:) or show(chord:).
         let loaded = try JSONDecoder().decode(Fretboard.self, from: data)
         scene.fretboard = loaded   // triggers scene.reload() automatically
     }
