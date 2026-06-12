@@ -177,6 +177,11 @@ open class FretboardScene: SKScene {
     /// Current layout geometry — updated on every `layoutContent()` call.
     private var geometry: FretboardGeometry?
 
+    /// Controls whether drag gestures scroll the neck (`true`) or glide across notes (`false`).
+    /// Updated automatically on every layout — `true` when the neck overflows the scene, `false` when it fits.
+    /// Set it explicitly to override: e.g. `isScrollingEnabled = false` to lock glide mode on a long neck.
+    public var isScrollingEnabled: Bool = false
+
     // MARK: - Touch / mouse tracking
 
     /// Maps a platform touch ID → the `FretboardNote` that was pressed by that touch.
@@ -774,8 +779,9 @@ open class FretboardScene: SKScene {
         let halfH = size.height / 2
 
         fretboardCamera.constraints = nil
+        isScrollingEnabled = totalNeckLength > neckAxisLength
 
-        if totalNeckLength > neckAxisLength {
+        if isScrollingEnabled {
             let overflow = totalNeckLength - neckAxisLength
             switch fretboard.direction {
             case .horizontal:
@@ -876,11 +882,39 @@ open class FretboardScene: SKScene {
     }
 
     private func handlePossiblePan(at pos: CGPoint, key: ObjectIdentifier) {
+        // ── Glide mode: fretboard fits on screen, no scrolling needed ────────────
+        if !isScrollingEnabled {
+            guard let geo = geometry else { return }
+            let cell = geo.cell(at: pos, stringCount: fretboard.orderedStrings.count, fretCount: fretboard.count)
+            let newNote = cell.flatMap { si, fi in
+                fretboard.notes.first { $0.stringIndex == si && $0.fretIndex == fi }
+            }
+
+            let currentNote = activeTouches[key]
+            guard currentNote?.id != newNote?.id else { return }
+
+            if let old = currentNote {
+                noteDelegate?.fretboardScene(self, noteOff: old)
+                dotNodes[old.id]?.animatePressUp()
+                unhighlightPitch(old.pitch)
+            }
+
+            if let note = newNote {
+                activeTouches[key] = note
+                noteDelegate?.fretboardScene(self, noteOn: note)
+                highlightPitch(note.pitch)
+                dotNodes[note.id]?.animatePressDown()
+            } else {
+                activeTouches.removeValue(forKey: key)
+            }
+            return
+        }
+
+        // ── Scroll mode: fretboard overflows, drag pans the neck ─────────────────
         if let start = touchStartPositions[key], !panningTouches.contains(key) {
             let dx = pos.x - start.x
             let dy = pos.y - start.y
             if sqrt(dx*dx + dy*dy) > panThreshold {
-                // Convert to pan — send noteOff and clear highlight for the associated note.
                 if let note = activeTouches.removeValue(forKey: key) {
                     noteDelegate?.fretboardScene(self, noteOff: note)
                     dotNodes[note.id]?.animatePressUp()

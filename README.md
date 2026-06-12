@@ -383,7 +383,7 @@ scene.configuration.isCapoModeOn = true
 .multiplier(CGFloat)   // Fraction of the scene's neck axis per fret.
 ```
 
-When content overflows, the scene pans automatically (drag/scroll — no host scroll view needed).
+When content overflows, the scene enters scroll mode automatically (drag to pan — no host scroll view needed). When it fits, glide mode activates. See **Scroll vs. glide mode** in the Playback section.
 
 ### `FretboardAlignment`
 
@@ -413,9 +413,25 @@ class MyViewController: UIViewController, FretboardSceneDelegate {
 
 - **noteOn** fires immediately on touch-down for minimum latency.
 - **noteOff** fires on touch-up or cancel.
-- **Polyphonic** on iOS/visionOS (each finger tracked independently).
+- **Polyphonic** — each finger is tracked independently, so chords and multi-touch glide both work.
 - The touched fret is automatically highlighted on press and unhighlighted on release.
-- Dragging past a threshold converts the touch to a camera pan and automatically sends `noteOff` — no stuck notes.
+
+**Scroll vs. glide mode** — determined automatically by whether the neck content fits in the scene:
+
+| Mode | When | Drag behaviour |
+|---|---|---|
+| **Glide** | Neck fits the scene (no overflow) | Dragging slides across notes — `noteOff` fires as the finger leaves a fret, `noteOn` fires as it enters the next. |
+| **Scroll** | Neck overflows the scene | Dragging pans the neck after a short threshold; `noteOff` fires on conversion so notes never get stuck. |
+
+Override at any time via `isScrollingEnabled`:
+
+```swift
+// Lock a long neck into glide mode (e.g. via a lock button)
+scene.isScrollingEnabled = false
+
+// Restore automatic behaviour
+scene.isScrollingEnabled = true   // or call scene.reload() to re-detect from geometry
+```
 
 ---
 
