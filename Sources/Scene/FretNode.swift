@@ -25,25 +25,130 @@ public enum CapoRole {
     case capEnd
 }
 
+// MARK: - FretInlay
+
+/// The visual style of a fret-inlay (position) marker, requested via `FretboardScene.showFretInlay(at:_:)`.
+///
+/// The *library* renders the geometry; the *app* decides which frets get an inlay and which style.
+/// Standard guitar convention — single at 3·5·7·9·15·17·19·21, double at 12·24 — is expressed in
+/// app code, not in the library:
+/// ```swift
+/// [3,5,7,9,15,17,19,21].forEach { scene.showFretInlay(at: $0) }
+/// [12,24].forEach { scene.showFretInlay(at: $0, .double) }
+/// ```
+public enum FretInlay: Codable, Hashable {
+    /// A single dot centered between the strings at this fret.
+    case single
+    /// Two dots at 1/3 and 2/3 across the string spread (octave-marker convention).
+    case double
+}
+
+// MARK: - FretboardNoteStyle
+
+/// Per-note visual overrides that can be passed to any `FretboardScene` show/highlight call.
+///
+/// Each field is optional. `nil` means "fall back to the corresponding `FretboardConfiguration.noteStyle`
+/// (or `highlightNoteStyle`) value, then to the built-in library default."
+/// Resolution order for every rendered dot:
+/// **per-note override → `config.noteStyle`/`highlightNoteStyle` → `.defaultNote`/`.defaultHighlight`**
+///
+/// **Label semantics:**
+/// - `nil` → use `note.pitch.noteName.description` (the default behaviour).
+/// - Non-nil, non-empty string → render that string (e.g. `"♭3"`, `"P5"`, `"2"` for finger number).
+/// - `""` (empty string) → hide the label for this specific note, regardless of `config.isDrawNoteName`.
+///
+/// **Usage — degree coloring when showing a scale:**
+/// ```swift
+/// for noteName in scale.noteNames {
+///     for octave in fretboard.octaves {
+///         let pitch = Pitch(noteName: noteName, octave: octave)
+///         if let degree = scale.degree(of: noteName) {
+///             scene.showPitch(pitch, style: .init(color: degreeColor(degree), label: "\(degree)"))
+///         }
+///     }
+/// }
+/// // Scale changed → scene.removeAllNotes(); re-run loop.
+/// ```
+public struct FretboardNoteStyle: Codable, Hashable {
+    /// Dot fill color. `nil` → inherits.
+    public var color: FretboardColor?
+    /// Label text color. `nil` → inherits.
+    public var textColor: FretboardColor?
+    /// Border (stroke) color. `nil` → inherits.
+    public var borderColor: FretboardColor?
+    /// Border width. `nil` → inherits.
+    public var borderWidth: CGFloat?
+    /// Label text override. `nil` → note name. `""` → hide label for this note.
+    public var label: String?
+
+    public init(
+        color: FretboardColor? = nil,
+        textColor: FretboardColor? = nil,
+        borderColor: FretboardColor? = nil,
+        borderWidth: CGFloat? = nil,
+        label: String? = nil
+    ) {
+        self.color = color
+        self.textColor = textColor
+        self.borderColor = borderColor
+        self.borderWidth = borderWidth
+        self.label = label
+    }
+
+    /// Returns a new style where every `nil` field is filled from `base`.
+    ///
+    /// Used internally by `FretNoteNode.layout` to chain:
+    /// per-note override → config default → built-in default.
+    public func merged(over base: FretboardNoteStyle) -> FretboardNoteStyle {
+        FretboardNoteStyle(
+            color: color ?? base.color,
+            textColor: textColor ?? base.textColor,
+            borderColor: borderColor ?? base.borderColor,
+            borderWidth: borderWidth ?? base.borderWidth,
+            label: label ?? base.label
+        )
+    }
+
+    /// Library built-in defaults for a normal (non-highlighted) note dot.
+    /// `label` is intentionally `nil` — it signals "use the note name."
+    public static let defaultNote = FretboardNoteStyle(
+        color: .black,
+        textColor: .white,
+        borderColor: .clear,
+        borderWidth: 0
+    )
+
+    /// Library built-in defaults for a highlighted note dot.
+    public static let defaultHighlight = FretboardNoteStyle(
+        color: FretboardColor(red: 0.95, green: 0.45, blue: 0.15, alpha: 1),
+        textColor: .white,
+        borderColor: .clear,
+        borderWidth: 0
+    )
+}
+
 // MARK: - FretNoteNode
 
 /// An on-demand SpriteKit node representing one note dot on the fretboard.
 ///
 /// Created by `FretboardScene` when a pitch is shown or highlighted, removed when it is
-/// no longer needed. The neck grid (strings, frets, labels) is drawn separately by the scene.
+/// no longer needed. The neck grid (strings, frets, inlay markers) is drawn separately by the scene.
 ///
 /// **Visual states:**
-/// - Normal: filled circle using `noteColor` / `noteTextColor` / border config.
-/// - Highlighted: same geometry, different fill (`highlightNoteColor`) — used identically for
-///   a user press and an incoming MIDI note.
+/// - Normal: style resolved from `shownStyle` → `config.noteStyle` → `.defaultNote`.
+/// - Highlighted: style resolved from `highlightStyle` → `config.highlightNoteStyle` → `.defaultHighlight`.
 /// - Capo: when `capoRole` is set by the scene, the dot is merged into a capsule bar.
+///
+/// **Per-note style overrides:**
+/// Set `shownStyle` and/or `highlightStyle` before calling `layout(configuration:)`.
+/// Both are stored on the dot so they survive `reload()` calls.
 public final class FretNoteNode: SKNode {
 
     // MARK: - Child nodes
 
     /// The dot shape (circle or capo capsule segment).
     public let noteNode = SKShapeNode()
-    /// The note-name label inside the dot.
+    /// The note-name (or override) label inside the dot.
     public let labelNode = SKLabelNode(fontNamed: "Helvetica")
 
     // MARK: - State
@@ -58,16 +163,33 @@ public final class FretNoteNode: SKNode {
     public var direction: FretboardDirection = .horizontal
 
     /// Whether this dot is in the highlighted state (user press or incoming MIDI).
+    ///
+    /// Setting this automatically re-applies `layout` so the correct state style is used.
     public var isHighlighted: Bool = false {
-        didSet { applyColors(configuration: _lastConfiguration) }
+        didSet {
+            guard oldValue != isHighlighted else { return }
+            layout(configuration: _lastConfiguration)
+        }
     }
 
     /// The capo rendering role assigned by the scene. Re-set after any change to the shown set.
     public var capoRole: CapoRole = .single
 
-    /// `true` when this dot was created solely to satisfy a `highlightNote` call for a pitch that
-    /// had no existing shown dot. The scene removes it when `unhighlightNote` is called.
+    /// `true` when this dot was created solely to satisfy a `highlightPitch`/`highlightNote` call for a
+    /// position that had no existing shown dot. The scene removes it when the highlight is cleared.
     public var isTransient: Bool = false
+
+    /// Per-note style override for the normal (non-highlighted) state.
+    ///
+    /// Non-nil fields override the corresponding `FretboardConfiguration.noteStyle` values.
+    /// Set before or alongside calling `layout(configuration:)` — the override is stored on the dot
+    /// and applied on every subsequent re-layout (e.g. after a `reload()`).
+    public var shownStyle: FretboardNoteStyle?
+
+    /// Per-note style override for the highlighted state.
+    ///
+    /// Non-nil fields override the corresponding `FretboardConfiguration.highlightNoteStyle` values.
+    public var highlightStyle: FretboardNoteStyle?
 
     // MARK: Private
 
@@ -87,9 +209,19 @@ public final class FretNoteNode: SKNode {
     // MARK: - Layout
 
     /// Rebuilds all child-node geometry to match the current `cellSize`, `capoRole`, `isHighlighted`,
-    /// `direction`, and `configuration`. Call after any of those properties change.
+    /// `direction`, `configuration`, and per-note style overrides (`shownStyle` / `highlightStyle`).
+    ///
+    /// Called by `FretboardScene` after geometry changes or state changes.
     public func layout(configuration cfg: FretboardConfiguration) {
         _lastConfiguration = cfg
+
+        // Three-tier style resolution:
+        //   per-note override → config default → built-in default.
+        let perNote = isHighlighted ? highlightStyle : shownStyle
+        let configDefault = isHighlighted ? cfg.highlightNoteStyle : cfg.noteStyle
+        let builtIn: FretboardNoteStyle = isHighlighted ? .defaultHighlight : .defaultNote
+        let base = configDefault.merged(over: builtIn)
+        let style = perNote?.merged(over: base) ?? base
 
         let minDim = min(cellSize.width, cellSize.height)
         let noteSize = max(minDim - cfg.noteOffset * 2, 0)
@@ -112,42 +244,40 @@ public final class FretNoteNode: SKNode {
             noteNode.path = capoBarPath(cx: cx, cy: cy, noteSize: noteSize, capStart: false, capEnd: true)
         }
 
-        applyColors(configuration: cfg)
+        // ── Colors ───────────────────────────────────────────────────────────────
+        let bw = style.borderWidth ?? 0
+        noteNode.fillColor = (style.color ?? .black).platformColor
+        noteNode.strokeColor = bw > 0 ? (style.borderColor ?? .clear).platformColor : .clear
+        noteNode.lineWidth = bw
+        labelNode.fontColor = (style.textColor ?? .white).platformColor
 
         // ── Label ────────────────────────────────────────────────────────────────
         if cfg.isDrawNoteName {
-            labelNode.isHidden = false
-            labelNode.text = note.pitch.noteName.description
+            if let overrideLabel = style.label {
+                // Empty string = hide this note's label even though isDrawNoteName is on.
+                labelNode.isHidden = overrideLabel.isEmpty
+                labelNode.text = overrideLabel.isEmpty ? nil : overrideLabel
+            } else {
+                labelNode.isHidden = false
+                labelNode.text = note.pitch.noteName.description
+            }
             labelNode.fontSize = max(noteSize / 2, 8)
             labelNode.verticalAlignmentMode = .center
             labelNode.horizontalAlignmentMode = .center
             labelNode.position = CGPoint(x: cx, y: cy)
         } else {
-            labelNode.isHidden = true
+            // isDrawNoteName is off globally — still allow a non-empty style label to show through.
+            if let overrideLabel = style.label, !overrideLabel.isEmpty {
+                labelNode.isHidden = false
+                labelNode.text = overrideLabel
+                labelNode.fontSize = max(noteSize / 2, 8)
+                labelNode.verticalAlignmentMode = .center
+                labelNode.horizontalAlignmentMode = .center
+                labelNode.position = CGPoint(x: cx, y: cy)
+            } else {
+                labelNode.isHidden = true
+            }
         }
-        updateLabelColor(configuration: cfg)
-    }
-
-    // MARK: - Color helpers
-
-    private func applyColors(configuration cfg: FretboardConfiguration) {
-        if isHighlighted {
-            noteNode.fillColor = cfg.highlightNoteColor.platformColor
-            let bw = cfg.highlightNoteBorderWidth > 0 ? cfg.highlightNoteBorderWidth : cfg.noteBorderWidth
-            noteNode.strokeColor = bw > 0 ? cfg.highlightNoteBorderColor.platformColor : .clear
-            noteNode.lineWidth = bw
-        } else {
-            noteNode.fillColor = cfg.noteColor.platformColor
-            noteNode.strokeColor = cfg.noteBorderWidth > 0 ? cfg.noteBorderColor.platformColor : .clear
-            noteNode.lineWidth = cfg.noteBorderWidth
-        }
-        updateLabelColor(configuration: cfg)
-    }
-
-    private func updateLabelColor(configuration cfg: FretboardConfiguration) {
-        labelNode.fontColor = isHighlighted
-            ? cfg.highlightNoteTextColor.platformColor
-            : cfg.noteTextColor.platformColor
     }
 
     // MARK: - Capo bar path

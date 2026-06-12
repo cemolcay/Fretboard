@@ -88,17 +88,50 @@ private struct FretboardGeometry {
 ///
 /// After mutating `fretboard` properties, call `scene.reload()` to re-sync the visuals.
 ///
-/// **Showing notes (scale/chord/arbitrary set):**
+/// **Showing every matching position for a pitch:**
 /// ```swift
-/// scene.showNotes(cMajorPitches)          // creates dots at all matching positions
-/// scene.hideNote(Pitch(noteName: .c, octave: 4))
-/// scene.clearNotes()                       // removes all shown dots
+/// scene.showPitch(Pitch(noteName: .c, octave: 4))   // all C4s on the neck
+/// scene.showPitches(cMajorPitches)
+/// scene.hidePitch(...)
+/// scene.clearNotes()
 /// ```
 ///
-/// **Highlighting (live MIDI, user press — same API):**
+/// **Showing a specific string+fret position (CAGED boxes, chord shapes):**
 /// ```swift
-/// scene.highlightNote(incomingPitch)       // creates a transient dot if none exists
-/// scene.unhighlightNote(incomingPitch)     // removes transient dots when done
+/// scene.showNote(specificFretboardNote)          // one exact position
+/// scene.showNotes(boxNotes)
+/// scene.hideNote(specificFretboardNote)
+/// ```
+///
+/// **Theory conveniences:**
+/// ```swift
+/// scene.showScale(cMajor)
+/// scene.showChord(gMajor)
+/// ```
+///
+/// **Per-note style — degree colors, interval labels, etc.:**
+/// ```swift
+/// for noteName in scale.noteNames {
+///     for pitch in fretboard.octaves.map({ Pitch(noteName: noteName, octave: $0) }) {
+///         if let degree = scale.degree(of: noteName) {
+///             scene.showPitch(pitch, style: .init(color: degreeColor(degree), label: "\(degree)"))
+///         }
+///     }
+/// }
+/// // Scale changed → scene.removeAllNotes(); re-run loop.
+/// ```
+///
+/// **Highlighting (live MIDI / user press):**
+/// ```swift
+/// scene.highlightPitch(incomingPitch)       // creates a transient dot if none exists
+/// scene.unhighlightPitch(incomingPitch)
+/// scene.highlightNote(specificPosition)
+/// ```
+///
+/// **Fret inlay markers (app sets positions):**
+/// ```swift
+/// [3,5,7,9,15,17,19,21].forEach { scene.showFretInlay(at: $0) }
+/// [12,24].forEach { scene.showFretInlay(at: $0, .double) }
 /// ```
 open class FretboardScene: SKScene {
 
@@ -122,7 +155,7 @@ open class FretboardScene: SKScene {
     /// Root node for all fretboard content (slides under the camera for scrolling).
     private let contentNode = SKNode()
 
-    /// Static neck geometry nodes (strings, frets lines).
+    /// Static neck geometry nodes (strings, frets lines, inlay markers).
     private var neckNodes: [SKShapeNode] = []
 
     /// Gutter label nodes.
@@ -132,8 +165,14 @@ open class FretboardScene: SKScene {
     /// On-demand note-dot nodes, keyed by `FretboardNote.id`.
     private var dotNodes: [String: FretNoteNode] = [:]
 
-    /// IDs of dots that exist because `showNote` was called (the "shown" set).
+    /// IDs of dots that exist because `showPitch`/`showNote` was called (the "shown" set).
     private var shownIDs: Set<String> = []
+
+    /// Fret inlay markers requested by the app, keyed by absolute fret number.
+    private var fretInlays: [Int: FretInlay] = [:]
+
+    /// SpriteKit nodes for currently rendered fret inlay markers.
+    private var inlayNodes: [SKNode] = []
 
     /// Current layout geometry — updated on every `layoutContent()` call.
     private var geometry: FretboardGeometry?
@@ -373,6 +412,9 @@ open class FretboardScene: SKScene {
             fretLabelNodes.append(label)
         }
 
+        // ── Fret inlay markers (app-requested) ───────────────────────────────────
+        renderFretInlays()
+
         // ── Camera ────────────────────────────────────────────────────────────────
         updateCameraConstraints(totalNeckLength: totalNeckLength, neckAxisLength: neckAxisLength,
                                 stringGutterSize: stringGutterSize, fretGutterSize: fretGutterSize)
@@ -392,9 +434,16 @@ open class FretboardScene: SKScene {
     }
 
     /// Creates and places a dot node for `note`. Does not update capo roles.
-    private func makeDot(for note: FretboardNote, transient: Bool) -> FretNoteNode {
+    ///
+    /// Pass `shownStyle` and/or `highlightStyle` to store per-note overrides on the dot before
+    /// the initial `layout` call, so the first render already uses the correct style.
+    private func makeDot(for note: FretboardNote, transient: Bool,
+                         shownStyle: FretboardNoteStyle? = nil,
+                         highlightStyle: FretboardNoteStyle? = nil) -> FretNoteNode {
         let dot = FretNoteNode(note: note)
         dot.isTransient = transient
+        dot.shownStyle = shownStyle
+        dot.highlightStyle = highlightStyle
         if let geo = geometry {
             dot.position = geo.origin(string: note.stringIndex, fret: note.fretIndex)
             dot.cellSize = geo.cellSize
@@ -461,19 +510,22 @@ open class FretboardScene: SKScene {
         }
     }
 
-    // MARK: - Public Marking API
+    // MARK: - Public Marking API — pitch (every matching position)
 
-    /// Creates a note dot at every board position whose MIDI note number matches `pitch`.
+    /// Shows a dot at every board position whose MIDI note number matches `pitch`.
     ///
-    /// If a dot already exists at a position (e.g. a transient highlight), it is promoted to
-    /// the shown set (cleared of `isTransient`) rather than duplicated.
-    public func showNote(_ pitch: Pitch) {
+    /// An optional `style` overrides specific visual properties for these dots; `nil` fields in
+    /// the style fall back to `configuration.noteStyle`, then to the built-in defaults.
+    /// If a dot already exists (e.g. a transient highlight), it is promoted to the shown set.
+    public func showPitch(_ pitch: Pitch, style: FretboardNoteStyle? = nil) {
         for note in fretboard.notes(matching: pitch) {
             if let existing = dotNodes[note.id] {
                 existing.isTransient = false
+                existing.shownStyle = style
+                existing.layout(configuration: configuration)
                 shownIDs.insert(note.id)
             } else {
-                let dot = makeDot(for: note, transient: false)
+                let dot = makeDot(for: note, transient: false, shownStyle: style)
                 shownIDs.insert(note.id)
                 dot.animateShow()
             }
@@ -481,20 +533,21 @@ open class FretboardScene: SKScene {
         updateCapoRoles()
     }
 
-    /// Creates note dots for each pitch in `pitches`. Convenience for showing a scale or chord.
-    public func showNotes(_ pitches: [Pitch]) {
-        for pitch in pitches { showNote(pitch) }
+    /// Shows dots for each pitch in `pitches`. Convenience for showing a scale or chord.
+    ///
+    /// The same `style` is applied to every shown dot; pass `nil` for the configuration default.
+    public func showPitches(_ pitches: [Pitch], style: FretboardNoteStyle? = nil) {
+        for pitch in pitches { showPitch(pitch, style: style) }
     }
 
     /// Removes the shown dot(s) for `pitch`.
     ///
-    /// If a dot is currently highlighted, it becomes transient and survives until `unhighlightNote` clears it.
-    public func hideNote(_ pitch: Pitch) {
+    /// Highlighted dots become transient and survive until `unhighlightPitch` clears them.
+    public func hidePitch(_ pitch: Pitch) {
         for note in fretboard.notes(matching: pitch) {
             shownIDs.remove(note.id)
             guard let dot = dotNodes[note.id] else { continue }
             if dot.isHighlighted {
-                // Keep alive as transient until unhighlighted.
                 dot.isTransient = true
             } else {
                 removeDot(id: note.id)
@@ -503,7 +556,107 @@ open class FretboardScene: SKScene {
         updateCapoRoles()
     }
 
-    /// Removes all shown dots. Highlighted dots that are transient survive until unhighlighted.
+    /// Highlights every position matching `pitch`. Creates transient dots where none exist.
+    ///
+    /// The optional `style` overrides the highlight appearance for these specific dots; `nil`
+    /// uses `configuration.highlightNoteStyle`.
+    public func highlightPitch(_ pitch: Pitch, style: FretboardNoteStyle? = nil) {
+        for note in fretboard.notes(matching: pitch) {
+            if let dot = dotNodes[note.id] {
+                dot.highlightStyle = style
+                dot.isHighlighted = true  // triggers layout via didSet
+            } else {
+                let dot = makeDot(for: note, transient: true, highlightStyle: style)
+                dot.isHighlighted = true  // triggers layout via didSet
+                dot.animateShow()
+            }
+        }
+        // Transient dots are excluded from capo merge; no full recompute needed.
+    }
+
+    /// Clears the highlight on every position matching `pitch`. Removes transient dots.
+    public func unhighlightPitch(_ pitch: Pitch) {
+        for note in fretboard.notes(matching: pitch) {
+            guard let dot = dotNodes[note.id] else { continue }
+            dot.isHighlighted = false
+            if dot.isTransient {
+                removeDot(id: note.id)
+            } else {
+                dot.layout(configuration: configuration)
+            }
+        }
+    }
+
+    // MARK: - Public Marking API — note (one exact string + fret position)
+
+    /// Shows a dot at the exact board position described by `note` (one specific string + fret).
+    ///
+    /// Unlike the pitch-based methods, this marks **one position** rather than every matching
+    /// MIDI number. Use this for CAGED boxes, chord voicings, and fingering diagrams where the
+    /// physical shape matters. `note` should come from `fretboard.notes` or `fretboard.notes(matching:)`.
+    public func showNote(_ note: FretboardNote, style: FretboardNoteStyle? = nil) {
+        if let existing = dotNodes[note.id] {
+            existing.isTransient = false
+            existing.shownStyle = style
+            existing.layout(configuration: configuration)
+            shownIDs.insert(note.id)
+        } else {
+            let dot = makeDot(for: note, transient: false, shownStyle: style)
+            shownIDs.insert(note.id)
+            dot.animateShow()
+        }
+        updateCapoRoles()
+    }
+
+    /// Shows a specific set of board positions. Convenience for chord shapes and scale boxes.
+    public func showNotes(_ notes: [FretboardNote], style: FretboardNoteStyle? = nil) {
+        for note in notes { showNote(note, style: style) }
+    }
+
+    /// Removes the shown dot at the specific position described by `note`.
+    ///
+    /// If the dot is currently highlighted, it becomes transient and survives until
+    /// `unhighlightNote` clears it.
+    public func hideNote(_ note: FretboardNote) {
+        shownIDs.remove(note.id)
+        guard let dot = dotNodes[note.id] else { return }
+        if dot.isHighlighted {
+            dot.isTransient = true
+        } else {
+            removeDot(id: note.id)
+        }
+        updateCapoRoles()
+    }
+
+    /// Highlights the dot at the exact position described by `note`.
+    /// Creates a transient dot if none exists at that position.
+    public func highlightNote(_ note: FretboardNote, style: FretboardNoteStyle? = nil) {
+        if let dot = dotNodes[note.id] {
+            dot.highlightStyle = style
+            dot.isHighlighted = true  // triggers layout via didSet
+        } else {
+            let dot = makeDot(for: note, transient: true, highlightStyle: style)
+            dot.isHighlighted = true  // triggers layout via didSet
+            dot.animateShow()
+        }
+    }
+
+    /// Clears the highlight on the dot at the exact position described by `note`.
+    /// Removes the dot if it is transient.
+    public func unhighlightNote(_ note: FretboardNote) {
+        guard let dot = dotNodes[note.id] else { return }
+        dot.isHighlighted = false
+        if dot.isTransient {
+            removeDot(id: note.id)
+        } else {
+            dot.layout(configuration: configuration)
+        }
+    }
+
+    // MARK: - Clearing
+
+    /// Removes all shown dots. Highlighted dots that are currently live survive as transient
+    /// until `unhighlightPitch`/`unhighlightNote` clears them.
     public func clearNotes() {
         let ids = shownIDs
         shownIDs = []
@@ -518,30 +671,90 @@ open class FretboardScene: SKScene {
         updateCapoRoles()
     }
 
-    /// Highlights the dot(s) for `pitch`. If no dot exists at a position, a transient one is created.
-    public func highlightNote(_ pitch: Pitch) {
-        for note in fretboard.notes(matching: pitch) {
-            if let dot = dotNodes[note.id] {
-                dot.isHighlighted = true
-            } else {
-                let dot = makeDot(for: note, transient: true)
-                dot.isHighlighted = true
-                dot.layout(configuration: configuration)
-                dot.animateShow()
-            }
+    /// Removes all note dots — shown, highlighted, and transient — resetting the display to a clean state.
+    ///
+    /// Unlike `clearNotes()`, this is an unconditional wipe. Use it when switching display mode,
+    /// changing tuning, or any time you want a guaranteed blank neck before re-populating.
+    public func removeAllNotes() {
+        shownIDs = []
+        for id in Array(dotNodes.keys) {
+            removeDot(id: id)
         }
-        // Transient dots are excluded from capo merge; no full recompute needed, just re-layout.
     }
 
-    /// Clears the highlight on dot(s) for `pitch`. Removes the dot if it is transient.
-    public func unhighlightNote(_ pitch: Pitch) {
-        for note in fretboard.notes(matching: pitch) {
-            guard let dot = dotNodes[note.id] else { continue }
-            dot.isHighlighted = false
-            if dot.isTransient {
-                removeDot(id: note.id)
-            } else {
-                dot.layout(configuration: configuration)
+    // MARK: - Fret Inlays
+
+    /// Shows an inlay marker at the given **absolute** fret number using the default color from
+    /// `configuration.fretMarkerColor`.
+    ///
+    /// Inlays survive `reload()` — the app calls this once after setup and the library re-renders
+    /// them on every geometry change. Standard guitar layout:
+    /// ```swift
+    /// [3,5,7,9,15,17,19,21].forEach { scene.showFretInlay(at: $0) }
+    /// [12,24].forEach { scene.showFretInlay(at: $0, .double) }
+    /// ```
+    public func showFretInlay(at fret: Int, _ style: FretInlay = .single) {
+        fretInlays[fret] = style
+        renderFretInlays()
+    }
+
+    /// Removes the inlay marker at the given absolute fret number.
+    public func hideFretInlay(at fret: Int) {
+        fretInlays.removeValue(forKey: fret)
+        renderFretInlays()
+    }
+
+    /// Removes all inlay markers.
+    public func clearFretInlays() {
+        fretInlays = [:]
+        renderFretInlays()
+    }
+
+    /// Re-renders all stored fret inlays from the current `fretInlays` dictionary.
+    /// Called after any inlay mutation and at the end of `layoutContent()`.
+    private func renderFretInlays() {
+        inlayNodes.forEach { $0.removeFromParent() }
+        inlayNodes = []
+
+        guard let geo = geometry else { return }
+
+        let stringCount = fretboard.orderedStrings.count
+        let fretCount = fretboard.count
+        let totalCrossLength = geo.cellCross * CGFloat(stringCount)
+        let markerRadius = min(geo.cellNeck, geo.cellCross) * 0.18
+
+        for (absoluteFret, style) in fretInlays {
+            let f = absoluteFret - fretboard.startIndex
+            guard f >= 0, f < fretCount else { continue }
+
+            let neckCenter = CGFloat(f) * geo.cellNeck + geo.cellNeck / 2 + geo.contentOffset
+
+            func addMarker(crossOffset: CGFloat) {
+                let node = SKShapeNode(circleOfRadius: markerRadius)
+                node.fillColor = configuration.fretMarkerColor.platformColor
+                node.strokeColor = .clear
+                switch fretboard.direction {
+                case .horizontal:
+                    node.position = CGPoint(
+                        x: geo.stringGutterSize + neckCenter,
+                        y: geo.fretGutterSize + crossOffset
+                    )
+                case .vertical:
+                    node.position = CGPoint(
+                        x: geo.fretGutterSize + crossOffset,
+                        y: geo.stringGutterSize + neckCenter
+                    )
+                }
+                contentNode.addChild(node)
+                inlayNodes.append(node)
+            }
+
+            switch style {
+            case .single:
+                addMarker(crossOffset: totalCrossLength / 2)
+            case .double:
+                addMarker(crossOffset: totalCrossLength / 3)
+                addMarker(crossOffset: 2 * totalCrossLength / 3)
             }
         }
     }
@@ -657,7 +870,7 @@ open class FretboardScene: SKScene {
 
         activeTouches[key] = note
         noteDelegate?.fretboardScene(self, noteOn: note)
-        highlightNote(note.pitch)
+        highlightPitch(note.pitch)
         dotNodes[note.id]?.animatePressDown()
         resumeIfPaused()
     }
@@ -671,7 +884,7 @@ open class FretboardScene: SKScene {
                 if let note = activeTouches.removeValue(forKey: key) {
                     noteDelegate?.fretboardScene(self, noteOff: note)
                     dotNodes[note.id]?.animatePressUp()
-                    unhighlightNote(note.pitch)
+                    unhighlightPitch(note.pitch)
                 }
                 panningTouches.insert(key)
                 touchStartPositions[key] = pos
@@ -690,7 +903,7 @@ open class FretboardScene: SKScene {
         if let note = activeTouches.removeValue(forKey: key) {
             noteDelegate?.fretboardScene(self, noteOff: note)
             dotNodes[note.id]?.animatePressUp()
-            unhighlightNote(note.pitch)
+            unhighlightPitch(note.pitch)
         }
         panningTouches.remove(key)
         touchStartPositions.removeValue(forKey: key)

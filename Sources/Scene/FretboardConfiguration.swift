@@ -76,27 +76,19 @@ public struct FretboardConfiguration: Codable, Hashable {
     /// Background color of the scene.
     public var backgroundColor: FretboardColor = .clear
 
-    // MARK: - Note dot — normal state
+    // MARK: - Note dot styles
 
-    /// Fill color of note dots in their normal (non-highlighted) state.
-    public var noteColor: FretboardColor = .black
-    /// Text color of note-name labels on dots in their normal state.
-    public var noteTextColor: FretboardColor = .white
-    /// Border (stroke) color of note dots in their normal state. Opt-in via `noteBorderWidth`.
-    public var noteBorderColor: FretboardColor = .clear
-    /// Border width for note dots in their normal state. Defaults to `0` (no border).
-    public var noteBorderWidth: CGFloat = 0
+    /// Style applied to all note dots in their normal (non-highlighted) state.
+    ///
+    /// Each `FretboardNoteStyle` field is optional — `nil` falls back to the library built-in
+    /// (`FretboardNoteStyle.defaultNote`). Individual show/highlight calls can further override
+    /// per note by passing their own `FretboardNoteStyle`.
+    public var noteStyle: FretboardNoteStyle = .defaultNote
 
-    // MARK: - Note dot — highlighted state
-
-    /// Fill color of note dots when highlighted (user press or incoming MIDI).
-    public var highlightNoteColor: FretboardColor = FretboardColor(red: 0.95, green: 0.45, blue: 0.15, alpha: 1)
-    /// Text color of note-name labels on highlighted dots.
-    public var highlightNoteTextColor: FretboardColor = .white
-    /// Border (stroke) color of note dots when highlighted.
-    public var highlightNoteBorderColor: FretboardColor = .clear
-    /// Border width for note dots when highlighted. Falls back to `noteBorderWidth` if `0`.
-    public var highlightNoteBorderWidth: CGFloat = 0
+    /// Style applied to all note dots when highlighted (user press or incoming MIDI).
+    ///
+    /// Same optional-field / fallback semantics as `noteStyle`.
+    public var highlightNoteStyle: FretboardNoteStyle = .defaultHighlight
 
     // MARK: - Line widths
 
@@ -115,6 +107,7 @@ public struct FretboardConfiguration: Codable, Hashable {
     // MARK: - Label toggles
 
     /// Whether to draw the note-name label inside note dots.
+    /// Individual notes may override this with a non-empty `FretboardNoteStyle.label`.
     public var isDrawNoteName: Bool = true
     /// Whether to draw string-name labels (E, A, D…) at the nut end.
     public var isDrawStringName: Bool = true
@@ -131,9 +124,16 @@ public struct FretboardConfiguration: Codable, Hashable {
     // MARK: - Capo visualization
 
     /// When `true`, adjacent shown dots on the same fret are rendered as a single capsule
-    /// (capo bar) rather than individual circles. Computed and applied at the scene level;
-    /// no data-layer state is involved.
+    /// (capo bar) rather than individual circles.
     public var isCapoModeOn: Bool = false
+
+    // MARK: - Fret inlay markers
+
+    /// Fill color for fret-inlay (position) markers added via `FretboardScene.showFretInlay(at:_:)`.
+    ///
+    /// The app controls *which* frets receive markers and their style (`.single` / `.double`).
+    /// This color is used for all inlay dots unless the app overrides them individually.
+    public var fretMarkerColor: FretboardColor = .lightGray
 
     public init() {}
 }

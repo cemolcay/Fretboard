@@ -60,10 +60,14 @@ class FretboardViewController: UIViewController {
         var cfg = FretboardConfiguration()
         cfg.fretSizing = .fit
         cfg.isDrawNoteName = true
-        cfg.noteColor = FretboardColor(red: 0.2, green: 0.4, blue: 0.9, alpha: 1)
-        cfg.highlightNoteColor = FretboardColor(red: 0.95, green: 0.35, blue: 0.1, alpha: 1)
-        cfg.noteBorderWidth = 1.5
-        cfg.noteBorderColor = FretboardColor(white: 0, alpha: 0.2)
+        cfg.noteStyle = FretboardNoteStyle(
+            color: FretboardColor(red: 0.2, green: 0.4, blue: 0.9, alpha: 1),
+            borderColor: FretboardColor(white: 0, alpha: 0.2),
+            borderWidth: 1.5
+        )
+        cfg.highlightNoteStyle = FretboardNoteStyle(
+            color: FretboardColor(red: 0.95, green: 0.35, blue: 0.1, alpha: 1)
+        )
         cfg.stringColor = .darkGray
         cfg.backgroundColor = FretboardColor(white: 0.96)
 
@@ -106,17 +110,17 @@ class FretboardViewController: UIViewController {
 
     @objc private func selectCMajor() {
         scene.clearNotes()
-        scene.show(scale: Scale(type: .major, root: .c))
+        scene.showScale(Scale(type: .major, root: .c))
     }
 
     @objc private func selectAMinor() {
         scene.clearNotes()
-        scene.show(scale: Scale(type: .naturalMinor, root: .a))
+        scene.showScale(Scale(type: .naturalMinor, root: .a))
     }
 
     @objc private func selectGMajorChord() {
         scene.clearNotes()
-        scene.show(chord: Chord(type: .major, root: .g))
+        scene.showChord(Chord(type: .major, root: .g))
     }
 
     @objc private func clearNotes() {
@@ -161,12 +165,12 @@ extension FretboardViewController {
 
     /// Call from your CoreMIDI / MIDI receive handler when a note-on arrives.
     func receiveMIDINoteOn(pitch: Pitch) {
-        scene.highlightNote(pitch)   // creates a transient dot if the note is off-scale
+        scene.highlightPitch(pitch)   // creates a transient dot if the note is off-scale
     }
 
     /// Call from your CoreMIDI / MIDI receive handler when a note-off arrives.
     func receiveMIDINoteOff(pitch: Pitch) {
-        scene.unhighlightNote(pitch) // removes transient dots; dims shown dots
+        scene.unhighlightPitch(pitch) // removes transient dots; dims shown dots
     }
 }
 
@@ -181,7 +185,7 @@ extension FretboardViewController {
     func loadFretboard(from data: Data) throws {
         // Replace the scene's model with a decoded one.
         // Note: shown dots are owned by the scene — you may want to re-show your
-        // scale/chord after this using show(scale:) or show(chord:).
+        // scale/chord after this using showScale(_:) or showChord(_:).
         let loaded = try JSONDecoder().decode(Fretboard.self, from: data)
         scene.fretboard = loaded   // triggers scene.reload() automatically
     }

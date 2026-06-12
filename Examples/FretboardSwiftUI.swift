@@ -33,10 +33,14 @@ final class FretboardSceneWrapper: ObservableObject, FretboardSceneDelegate {
 
         var cfg = FretboardConfiguration()
         cfg.fretSizing = .fit
-        cfg.noteColor = FretboardColor(red: 0.15, green: 0.6, blue: 0.45, alpha: 1)
-        cfg.highlightNoteColor = FretboardColor(red: 0.95, green: 0.35, blue: 0.1, alpha: 1)
-        cfg.noteBorderWidth = 1.5
-        cfg.noteBorderColor = FretboardColor(white: 0, alpha: 0.2)
+        cfg.noteStyle = FretboardNoteStyle(
+            color: FretboardColor(red: 0.15, green: 0.6, blue: 0.45, alpha: 1),
+            borderColor: FretboardColor(white: 0, alpha: 0.2),
+            borderWidth: 1.5
+        )
+        cfg.highlightNoteStyle = FretboardNoteStyle(
+            color: FretboardColor(red: 0.95, green: 0.35, blue: 0.1, alpha: 1)
+        )
         cfg.backgroundColor = FretboardColor(white: 0.97)
 
         let s = FretboardScene(fretboard: fb, configuration: cfg)
@@ -60,12 +64,12 @@ final class FretboardSceneWrapper: ObservableObject, FretboardSceneDelegate {
 
     func show(scale: Scale) {
         scene.clearNotes()
-        scene.show(scale: scale)
+        scene.showScale(scale)
     }
 
     func show(chord: Chord) {
         scene.clearNotes()
-        scene.show(chord: chord)
+        scene.showChord(chord)
     }
 
     func clearSelection() {
@@ -73,14 +77,14 @@ final class FretboardSceneWrapper: ObservableObject, FretboardSceneDelegate {
     }
 
     // MARK: Live MIDI example
-    // Call highlightNote/unhighlightNote from your MIDI receiver — no reload needed.
+    // Call highlightPitch/unhighlightPitch from your MIDI receiver — no reload needed.
 
     func midiNoteOn(_ pitch: Pitch) {
-        scene.highlightNote(pitch)   // creates a transient dot if the note is off-scale
+        scene.highlightPitch(pitch)   // creates a transient dot if the note is off-scale
     }
 
     func midiNoteOff(_ pitch: Pitch) {
-        scene.unhighlightNote(pitch) // removes transient dots; dims shown dots
+        scene.unhighlightPitch(pitch) // removes transient dots; dims shown dots
     }
 
     // MARK: Instrument / layout
@@ -217,7 +221,8 @@ extension FretboardSceneWrapper {
 
     func restoreState(from data: Data) throws {
         // Decode into a new Fretboard and hot-swap it into the scene.
-        // Note: shown dots are owned by the scene — you may want to re-show your scale/chord after this.
+        // Note: shown dots are owned by the scene — you may want to re-show your scale/chord
+        // after this using showScale(_:) or showChord(_:).
         let restored = try JSONDecoder().decode(Fretboard.self, from: data)
         scene.fretboard = restored   // triggers scene.reload() automatically
         objectWillChange.send()
