@@ -223,6 +223,16 @@ public final class FretNoteNode: SKNode {
         let base = configDefault.merged(over: builtIn)
         let style = perNote?.merged(over: base) ?? base
 
+        // When a dot is highlighted (press or MIDI), keep the label it was shown with
+        // unless the highlight style explicitly provides a different one.  Without this,
+        // pressing a note that was given a LabelMode-derived label (degree, interval, etc.)
+        // drops back to the raw note name because highlightStyle.label is nil.
+        // Transient dots that were never shown (shownStyle == nil) still fall back to the
+        // note name — so unshown pitches that get pressed show the note name as expected.
+        let resolvedLabel = isHighlighted
+            ? (highlightStyle?.label ?? shownStyle?.label ?? style.label)
+            : style.label
+
         let minDim = min(cellSize.width, cellSize.height)
         let noteSize = max(minDim - cfg.noteOffset * 2, 0)
         let center = CGPoint.zero
@@ -252,7 +262,7 @@ public final class FretNoteNode: SKNode {
 
         // ── Label ────────────────────────────────────────────────────────────────
         if cfg.isDrawNoteName {
-            if let overrideLabel = style.label {
+            if let overrideLabel = resolvedLabel {
                 // Empty string = hide this note's label even though isDrawNoteName is on.
                 if overrideLabel.isEmpty {
                     labelNode.isHidden = true
@@ -265,7 +275,7 @@ public final class FretNoteNode: SKNode {
             }
         } else {
             // isDrawNoteName is off globally — still allow a non-empty style label to show through.
-            if let overrideLabel = style.label, !overrideLabel.isEmpty {
+            if let overrideLabel = resolvedLabel, !overrideLabel.isEmpty {
                 layoutLabel(overrideLabel, noteSize: noteSize, center: center)
             } else {
                 labelNode.isHidden = true
