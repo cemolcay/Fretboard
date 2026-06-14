@@ -244,6 +244,27 @@ final class FretboardTests: XCTestCase {
         XCTAssertNotNil(FretboardNoteStyle.defaultHighlight.borderWidth)
     }
 
+    func testLongNoteLabelsFitInsideDot() {
+        let node = FretNoteNode(note: FretboardNote(
+            pitch: Pitch(noteName: .cs, octave: 4),
+            fretIndex: 0,
+            stringIndex: 0
+        ))
+        node.cellSize = CGSize(width: 28, height: 28)
+        node.shownStyle = FretboardNoteStyle(label: "C♯4")
+
+        var cfg = FretboardConfiguration()
+        cfg.noteOffset = 2
+        node.layout(configuration: cfg)
+
+        let noteSize = node.cellSize.width - cfg.noteOffset * 2
+        let availableSize = noteSize * 0.72
+        let labelFrame = node.labelNode.calculateAccumulatedFrame()
+
+        XCTAssertLessThanOrEqual(labelFrame.width, availableSize + 0.5)
+        XCTAssertLessThanOrEqual(labelFrame.height, availableSize + 0.5)
+    }
+
     // MARK: - FretInlay
 
     func testFretInlayCodable() throws {

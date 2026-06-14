@@ -255,28 +255,47 @@ public final class FretNoteNode: SKNode {
         if cfg.isDrawNoteName {
             if let overrideLabel = style.label {
                 // Empty string = hide this note's label even though isDrawNoteName is on.
-                labelNode.isHidden = overrideLabel.isEmpty
-                labelNode.text = overrideLabel.isEmpty ? nil : overrideLabel
+                if overrideLabel.isEmpty {
+                    labelNode.isHidden = true
+                    labelNode.text = nil
+                } else {
+                    layoutLabel(overrideLabel, noteSize: noteSize, center: CGPoint(x: cx, y: cy))
+                }
             } else {
-                labelNode.isHidden = false
-                labelNode.text = note.pitch.noteName.description
+                layoutLabel(note.pitch.noteName.description, noteSize: noteSize, center: CGPoint(x: cx, y: cy))
             }
-            labelNode.fontSize = max(noteSize / 2, 8)
-            labelNode.verticalAlignmentMode = .center
-            labelNode.horizontalAlignmentMode = .center
-            labelNode.position = CGPoint(x: cx, y: cy)
         } else {
             // isDrawNoteName is off globally — still allow a non-empty style label to show through.
             if let overrideLabel = style.label, !overrideLabel.isEmpty {
-                labelNode.isHidden = false
-                labelNode.text = overrideLabel
-                labelNode.fontSize = max(noteSize / 2, 8)
-                labelNode.verticalAlignmentMode = .center
-                labelNode.horizontalAlignmentMode = .center
-                labelNode.position = CGPoint(x: cx, y: cy)
+                layoutLabel(overrideLabel, noteSize: noteSize, center: CGPoint(x: cx, y: cy))
             } else {
                 labelNode.isHidden = true
             }
+        }
+    }
+
+    private func layoutLabel(_ text: String, noteSize: CGFloat, center: CGPoint) {
+        labelNode.isHidden = false
+        labelNode.text = text
+        labelNode.verticalAlignmentMode = .center
+        labelNode.horizontalAlignmentMode = .center
+        labelNode.position = center
+
+        let maxFontSize = max(noteSize / 2, 8)
+        let minFontSize: CGFloat = 1
+        let availableSize = max(noteSize * 0.72, 1)
+
+        labelNode.fontSize = maxFontSize
+        let frame = labelNode.calculateAccumulatedFrame()
+        let widthScale = frame.width > 0 ? availableSize / frame.width : 1
+        let heightScale = frame.height > 0 ? availableSize / frame.height : 1
+        let fittedSize = max(min(maxFontSize * min(widthScale, heightScale, 1), maxFontSize), minFontSize)
+        labelNode.fontSize = fittedSize
+
+        while labelNode.fontSize > minFontSize {
+            let fittedFrame = labelNode.calculateAccumulatedFrame()
+            guard fittedFrame.width > availableSize || fittedFrame.height > availableSize else { break }
+            labelNode.fontSize = max(labelNode.fontSize - 0.5, minFontSize)
         }
     }
 
