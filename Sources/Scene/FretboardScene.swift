@@ -46,6 +46,12 @@ private struct FretboardGeometry {
         }
     }
 
+    /// Scene-space center of the cell at (stringIndex, fretIndex).
+    func center(string: Int, fret: Int) -> CGPoint {
+        let origin = origin(string: string, fret: fret)
+        return CGPoint(x: origin.x + cellSize.width / 2, y: origin.y + cellSize.height / 2)
+    }
+
     /// Returns the (stringIndex, fretIndex) for `point` in content-node space, or `nil` if outside.
     func cell(at point: CGPoint, stringCount: Int, fretCount: Int) -> (string: Int, fret: Int)? {
         let nx: CGFloat
@@ -73,6 +79,13 @@ private struct FretboardGeometry {
         guard fret >= 0, fret < fretCount, string >= 0, string < stringCount else { return nil }
         return (string: string, fret: fret)
     }
+}
+
+private enum FretboardZPosition {
+    static let inlay: CGFloat = 0
+    static let neck: CGFloat = 10
+    static let labels: CGFloat = 20
+    static let notes: CGFloat = 30
 }
 
 // MARK: - FretboardScene
@@ -337,6 +350,7 @@ open class FretboardScene: SKScene {
             let node = SKShapeNode(path: path)
             node.strokeColor = configuration.stringColor.platformColor
             node.lineWidth = configuration.stringWidth
+            node.zPosition = FretboardZPosition.neck
             contentNode.addChild(node)
             neckNodes.append(node)
         }
@@ -363,6 +377,7 @@ open class FretboardScene: SKScene {
             let node = SKShapeNode(path: path)
             node.strokeColor = configuration.fretColor.platformColor
             node.lineWidth = lineWidth
+            node.zPosition = FretboardZPosition.neck
             contentNode.addChild(node)
             neckNodes.append(node)
         }
@@ -377,6 +392,7 @@ open class FretboardScene: SKScene {
             label.fontSize = max(labelFontSize, 8)
             label.fontColor = configuration.stringLabelColor.platformColor
             label.isHidden = !showStringLabels
+            label.zPosition = FretboardZPosition.labels
 
             let crossPos = CGFloat(i) * cellCross + cellCross / 2
             switch direction {
@@ -404,6 +420,7 @@ open class FretboardScene: SKScene {
             label.fontSize = max(fretLabelFontSize, 8)
             label.fontColor = configuration.fretLabelColor.platformColor
             label.isHidden = !showFretLabels
+            label.zPosition = FretboardZPosition.labels
 
             let neckPos = CGFloat(f) * cellNeck + cellNeck / 2 + contentOffset
             switch direction {
@@ -431,7 +448,7 @@ open class FretboardScene: SKScene {
     private func repositionDots() {
         guard let geo = geometry else { return }
         for (_, dot) in dotNodes {
-            dot.position = geo.origin(string: dot.note.stringIndex, fret: dot.note.fretIndex)
+            dot.position = geo.center(string: dot.note.stringIndex, fret: dot.note.fretIndex)
             dot.cellSize = geo.cellSize
             dot.direction = fretboard.direction
             dot.layout(configuration: configuration)
@@ -446,11 +463,12 @@ open class FretboardScene: SKScene {
                          shownStyle: FretboardNoteStyle? = nil,
                          highlightStyle: FretboardNoteStyle? = nil) -> FretNoteNode {
         let dot = FretNoteNode(note: note)
+        dot.zPosition = FretboardZPosition.notes
         dot.isTransient = transient
         dot.shownStyle = shownStyle
         dot.highlightStyle = highlightStyle
         if let geo = geometry {
-            dot.position = geo.origin(string: note.stringIndex, fret: note.fretIndex)
+            dot.position = geo.center(string: note.stringIndex, fret: note.fretIndex)
             dot.cellSize = geo.cellSize
             dot.direction = fretboard.direction
         }
@@ -738,6 +756,7 @@ open class FretboardScene: SKScene {
                 let node = SKShapeNode(circleOfRadius: markerRadius)
                 node.fillColor = configuration.fretMarkerColor.platformColor
                 node.strokeColor = .clear
+                node.zPosition = FretboardZPosition.inlay
                 switch fretboard.direction {
                 case .horizontal:
                     node.position = CGPoint(
@@ -862,7 +881,6 @@ open class FretboardScene: SKScene {
     open override func scrollWheel(with event: NSEvent) {
         let delta = CGPoint(x: event.scrollingDeltaX, y: -event.scrollingDeltaY)
         pan(by: delta)
-        resumeIfPaused()
     }
 #endif
 
@@ -878,7 +896,6 @@ open class FretboardScene: SKScene {
         noteDelegate?.fretboardScene(self, noteOn: note)
         highlightPitch(note.pitch)
         dotNodes[note.id]?.animatePressDown()
-        resumeIfPaused()
     }
 
     private func handlePossiblePan(at pos: CGPoint, key: ObjectIdentifier) {
@@ -929,7 +946,6 @@ open class FretboardScene: SKScene {
             let start = touchStartPositions[key] ?? pos
             let delta = CGPoint(x: pos.x - start.x, y: pos.y - start.y)
             pan(by: delta)
-            resumeIfPaused()
         }
     }
 
@@ -941,7 +957,6 @@ open class FretboardScene: SKScene {
         }
         panningTouches.remove(key)
         touchStartPositions.removeValue(forKey: key)
-        pauseIfIdle()
     }
 
     // MARK: - Pan helper
@@ -955,17 +970,4 @@ open class FretboardScene: SKScene {
         }
     }
 
-    // MARK: - Idle pause
-
-    private func resumeIfPaused() {
-        isPaused = false
-    }
-
-    private func pauseIfIdle() {
-        guard activeTouches.isEmpty && panningTouches.isEmpty else { return }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            guard let self, self.activeTouches.isEmpty && self.panningTouches.isEmpty else { return }
-            self.isPaused = true
-        }
-    }
 }

@@ -225,23 +225,22 @@ public final class FretNoteNode: SKNode {
 
         let minDim = min(cellSize.width, cellSize.height)
         let noteSize = max(minDim - cfg.noteOffset * 2, 0)
-        let cx = cellSize.width / 2
-        let cy = cellSize.height / 2
+        let center = CGPoint.zero
 
         // ── Shape ────────────────────────────────────────────────────────────────
         switch capoRole {
         case .single:
             let r = noteSize / 2
-            noteNode.path = CGPath(ellipseIn: CGRect(x: cx - r, y: cy - r, width: noteSize, height: noteSize), transform: nil)
+            noteNode.path = CGPath(ellipseIn: CGRect(x: -r, y: -r, width: noteSize, height: noteSize), transform: nil)
 
         case .capStart:
-            noteNode.path = capoBarPath(cx: cx, cy: cy, noteSize: noteSize, capStart: true, capEnd: false)
+            noteNode.path = capoBarPath(noteSize: noteSize, capStart: true, capEnd: false)
 
         case .bar:
-            noteNode.path = capoBarPath(cx: cx, cy: cy, noteSize: noteSize, capStart: false, capEnd: false)
+            noteNode.path = capoBarPath(noteSize: noteSize, capStart: false, capEnd: false)
 
         case .capEnd:
-            noteNode.path = capoBarPath(cx: cx, cy: cy, noteSize: noteSize, capStart: false, capEnd: true)
+            noteNode.path = capoBarPath(noteSize: noteSize, capStart: false, capEnd: true)
         }
 
         // ── Colors ───────────────────────────────────────────────────────────────
@@ -259,15 +258,15 @@ public final class FretNoteNode: SKNode {
                     labelNode.isHidden = true
                     labelNode.text = nil
                 } else {
-                    layoutLabel(overrideLabel, noteSize: noteSize, center: CGPoint(x: cx, y: cy))
+                    layoutLabel(overrideLabel, noteSize: noteSize, center: center)
                 }
             } else {
-                layoutLabel(note.pitch.noteName.description, noteSize: noteSize, center: CGPoint(x: cx, y: cy))
+                layoutLabel(note.pitch.noteName.description, noteSize: noteSize, center: center)
             }
         } else {
             // isDrawNoteName is off globally — still allow a non-empty style label to show through.
             if let overrideLabel = style.label, !overrideLabel.isEmpty {
-                layoutLabel(overrideLabel, noteSize: noteSize, center: CGPoint(x: cx, y: cy))
+                layoutLabel(overrideLabel, noteSize: noteSize, center: center)
             } else {
                 labelNode.isHidden = true
             }
@@ -301,33 +300,33 @@ public final class FretNoteNode: SKNode {
 
     // MARK: - Capo bar path
 
-    private func capoBarPath(cx: CGFloat, cy: CGFloat, noteSize: CGFloat, capStart: Bool, capEnd: Bool) -> CGPath {
+    private func capoBarPath(noteSize: CGFloat, capStart: Bool, capEnd: Bool) -> CGPath {
         let half = noteSize / 2
         let path = CGMutablePath()
 
         switch direction {
         case .horizontal:
             // Bar runs top-to-bottom (across strings). capStart = cap at top, capEnd = cap at bottom.
-            let barY: CGFloat = capEnd ? cy : 0
+            let barY: CGFloat = capEnd ? 0 : -cellSize.height / 2
             let barH: CGFloat = capStart || capEnd ? cellSize.height / 2 : cellSize.height
-            path.addRect(CGRect(x: cx - half, y: barY, width: noteSize, height: barH))
+            path.addRect(CGRect(x: -half, y: barY, width: noteSize, height: barH))
             if capStart {
-                path.addEllipse(in: CGRect(x: cx - half, y: cy - half, width: noteSize, height: noteSize))
+                path.addEllipse(in: CGRect(x: -half, y: -half, width: noteSize, height: noteSize))
             }
             if capEnd {
-                path.addEllipse(in: CGRect(x: cx - half, y: cy - half, width: noteSize, height: noteSize))
+                path.addEllipse(in: CGRect(x: -half, y: -half, width: noteSize, height: noteSize))
             }
 
         case .vertical:
             // Bar runs left-to-right (across strings). capStart = cap at left, capEnd = cap at right.
-            let barX: CGFloat = capEnd ? cx : 0
+            let barX: CGFloat = capEnd ? 0 : -cellSize.width / 2
             let barW: CGFloat = capStart || capEnd ? cellSize.width / 2 : cellSize.width
-            path.addRect(CGRect(x: barX, y: cy - half, width: barW, height: noteSize))
+            path.addRect(CGRect(x: barX, y: -half, width: barW, height: noteSize))
             if capStart {
-                path.addEllipse(in: CGRect(x: cx - half, y: cy - half, width: noteSize, height: noteSize))
+                path.addEllipse(in: CGRect(x: -half, y: -half, width: noteSize, height: noteSize))
             }
             if capEnd {
-                path.addEllipse(in: CGRect(x: cx - half, y: cy - half, width: noteSize, height: noteSize))
+                path.addEllipse(in: CGRect(x: -half, y: -half, width: noteSize, height: noteSize))
             }
         }
 
@@ -352,6 +351,9 @@ public final class FretNoteNode: SKNode {
 
     /// Plays a pop-in animation when a note dot is first shown.
     public func animateShow() {
+        removeAction(forKey: "hide")
+        noteNode.removeAction(forKey: "show")
+        alpha = 1
         noteNode.setScale(0.1)
         noteNode.run(.sequence([
             .scale(to: 1.1, duration: 0.12),
@@ -361,7 +363,8 @@ public final class FretNoteNode: SKNode {
 
     /// Fades out the note dot before it is removed from the scene.
     public func animateHide(completion: @escaping () -> Void) {
-        noteNode.run(.sequence([
+        noteNode.removeAction(forKey: "show")
+        run(.sequence([
             .fadeOut(withDuration: 0.1),
             .run(completion),
         ]), withKey: "hide")
