@@ -18,6 +18,14 @@ public protocol FretboardSceneDelegate: AnyObject {
     func fretboardScene(_ scene: FretboardScene, noteOn note: FretboardNote)
     /// The same fret was released. Send MIDI note-off or stop the sample here.
     func fretboardScene(_ scene: FretboardScene, noteOff note: FretboardNote)
+    /// Called just before a touch-press highlight is rendered for `note`.
+    /// Return a style (typically just `label:`) to override the highlight appearance.
+    /// Return `nil` to use `configuration.highlightNoteStyle`. Default implementation returns `nil`.
+    func fretboardScene(_ scene: FretboardScene, highlightStyleFor note: FretboardNote) -> FretboardNoteStyle?
+}
+
+public extension FretboardSceneDelegate {
+    func fretboardScene(_ scene: FretboardScene, highlightStyleFor note: FretboardNote) -> FretboardNoteStyle? { nil }
 }
 
 // MARK: - FretboardGeometry
@@ -894,7 +902,7 @@ open class FretboardScene: SKScene {
 
         activeTouches[key] = note
         noteDelegate?.fretboardScene(self, noteOn: note)
-        highlightPitch(note.pitch)
+        highlightPitch(note.pitch, style: noteDelegate?.fretboardScene(self, highlightStyleFor: note))
         dotNodes[note.id]?.animatePressDown()
     }
 
@@ -919,7 +927,7 @@ open class FretboardScene: SKScene {
             if let note = newNote {
                 activeTouches[key] = note
                 noteDelegate?.fretboardScene(self, noteOn: note)
-                highlightPitch(note.pitch)
+                highlightPitch(note.pitch, style: noteDelegate?.fretboardScene(self, highlightStyleFor: note))
                 dotNodes[note.id]?.animatePressDown()
             } else {
                 activeTouches.removeValue(forKey: key)
