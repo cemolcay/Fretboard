@@ -358,7 +358,7 @@ scene.showPitch(rootPitch, style: FretboardNoteStyle(color: .init(red: 1, green:
 
 | Property | Default | Description |
 |---|---|---|
-| `fretSizing` | `.fit` | How large each fret is along the neck axis. |
+| `fretSizing` | `.fill` | How large each fret is along the neck axis. |
 | `alignment` | `.center` | Where to anchor the board when smaller than the scene. |
 | `noteOffset` | `5` | Inset shrinking the dot away from cell edges (pt). |
 | `isDrawNoteName` | `true` | Show note-name labels on dots globally. Per-note `label` overrides this. |
@@ -378,10 +378,16 @@ scene.configuration.isCapoModeOn = true
 ### `FretSizing`
 
 ```swift
-.fit                   // All frets fill the scene exactly (no scroll).
-.fixed(CGFloat)        // Fixed points per fret.
+.fill                  // All frets fill the scene's neck axis exactly. No scroll.
+.fit                   // Proportional fit: fret length = string spacing × fitAspectRatio (1.5),
+                       // capped at the fill length so the board never scrolls. The board
+                       // centers in both axes when smaller than the scene. Ideal for large
+                       // screens (iPad) where .fill makes frets disproportionately tall.
+.fixed(CGFloat)        // Fixed points per fret. Scrollable when total length overflows the scene.
 .multiplier(CGFloat)   // Fraction of the scene's neck axis per fret.
 ```
+
+`fitAspectRatio` is a public static constant on `FretSizing`; adjust it if you want frets wider or narrower relative to string spacing.
 
 When content overflows, the scene enters scroll mode automatically (drag to pan — no host scroll view needed). When it fits, glide mode activates. See **Scroll vs. glide mode** in the Playback section.
 

@@ -47,6 +47,19 @@ public final class Fretboard: Codable {
         didSet { rebuildNotes() }
     }
 
+    /// When `true`, the string order is reversed for the current direction.
+    ///
+    /// Default layout (not flipped):
+    /// - Horizontal: high E at top, low E at bottom (notation/reading convention).
+    /// - Vertical: high E at left, low E at right (90° CCW rotation of horizontal).
+    ///
+    /// Flipped layout:
+    /// - Horizontal: low E at top, high E at bottom.
+    /// - Vertical: low E at left, high E at right (standard chord diagram convention).
+    public var isFlipped: Bool {
+        didSet { rebuildNotes() }
+    }
+
     /// The computed grid of all fret-note positions. Read-only; rebuilt whenever layout properties change.
     public private(set) var notes: [FretboardNote] = []
 
@@ -56,19 +69,21 @@ public final class Fretboard: Codable {
         tuning: Tuning = GuitarTuning.standard,
         startIndex: Int = 0,
         count: Int = 5,
-        direction: FretboardDirection = .horizontal
+        direction: FretboardDirection = .horizontal,
+        isFlipped: Bool = false
     ) {
         self.tuning = tuning
         self.startIndex = max(0, startIndex)
         self.count = max(1, count)
         self.direction = direction
+        self.isFlipped = isFlipped
         rebuildNotes()
     }
 
     // MARK: - Codable
 
     private enum CodingKeys: String, CodingKey {
-        case tuning, startIndex, count, direction
+        case tuning, startIndex, count, direction, isFlipped
     }
 
     public required init(from decoder: Decoder) throws {
@@ -77,6 +92,7 @@ public final class Fretboard: Codable {
         startIndex = try c.decode(Int.self, forKey: .startIndex)
         count = try c.decode(Int.self, forKey: .count)
         direction = try c.decode(FretboardDirection.self, forKey: .direction)
+        isFlipped = try c.decodeIfPresent(Bool.self, forKey: .isFlipped) ?? false
         rebuildNotes()
     }
 
@@ -86,13 +102,28 @@ public final class Fretboard: Codable {
         try c.encode(startIndex, forKey: .startIndex)
         try c.encode(count, forKey: .count)
         try c.encode(direction, forKey: .direction)
+        try c.encode(isFlipped, forKey: .isFlipped)
     }
 
     // MARK: - Note Grid
 
-    /// Strings ordered for display: horizontal = low→high bottom-to-top (reversed), vertical = top-to-bottom.
+    /// Strings ordered for display, accounting for direction and flip.
+    ///
+    /// SpriteKit's coordinate system has y=0 at the bottom (horizontal) and x=0 at the left
+    /// (vertical), so index 0 always renders at the bottom/left edge. The base ordering is
+    /// chosen so that index 0 lands on low E (bottom/left) by default, which after the
+    /// SpriteKit inversion yields high E at the visible top/left — the notation convention.
+    ///
+    /// - Horizontal not flipped: `tuning.strings` → E2 at index 0 (bottom) → high E visible at top.
+    /// - Vertical not flipped:   `tuning.strings.reversed()` → E4 at index 0 (left) → high E visible at left.
+    /// - Flipped reverses the base in both cases.
     public var orderedStrings: [Pitch] {
-        direction == .horizontal ? tuning.strings.reversed() : tuning.strings
+        switch direction {
+        case .horizontal:
+            return isFlipped ? Array(tuning.strings.reversed()) : tuning.strings
+        case .vertical:
+            return isFlipped ? tuning.strings : Array(tuning.strings.reversed())
+        }
     }
 
     /// All octaves currently visible on the fretboard, sorted ascending.

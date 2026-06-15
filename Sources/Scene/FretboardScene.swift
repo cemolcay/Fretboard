@@ -39,13 +39,14 @@ private struct FretboardGeometry {
     let fretGutterSize: CGFloat
     let cellNeck: CGFloat
     let cellCross: CGFloat
-    let contentOffset: CGFloat   // offset along neck axis for alignment
+    let contentOffset: CGFloat        // offset along neck axis for alignment
+    let crossContentOffset: CGFloat   // offset along cross axis for alignment (e.g. Fit mode)
     let direction: FretboardDirection
 
     /// Scene-space origin of the cell at (stringIndex, fretIndex).
     func origin(string: Int, fret: Int) -> CGPoint {
         let neckPos = CGFloat(fret) * cellNeck + contentOffset
-        let crossPos = CGFloat(string) * cellCross
+        let crossPos = CGFloat(string) * cellCross + crossContentOffset
         switch direction {
         case .horizontal:
             return CGPoint(x: stringGutterSize + neckPos, y: fretGutterSize + crossPos)
@@ -67,9 +68,9 @@ private struct FretboardGeometry {
         switch direction {
         case .horizontal:
             nx = point.x - stringGutterSize - contentOffset
-            ny = point.y - fretGutterSize
+            ny = point.y - fretGutterSize - crossContentOffset
         case .vertical:
-            nx = point.x - fretGutterSize
+            nx = point.x - fretGutterSize - crossContentOffset
             ny = point.y - stringGutterSize - contentOffset
         }
 
@@ -304,9 +305,27 @@ open class FretboardScene: SKScene {
             crossAxisLength = size.width - fretGutterSize
         }
 
-        let cellNeck = configuration.fretSizing.fretLength(neckAxisLength: neckAxisLength, count: fretCount)
-        let cellCross = crossAxisLength / CGFloat(stringCount)
+        let defaultCellCross = crossAxisLength / CGFloat(stringCount)
+
+        // Compute per-fret sizes. `.fit` is handled here (not in FretSizing.fretLength) because
+        // it needs the live cross-axis / string-spacing to derive proportional dimensions.
+        // `.fit` maintains cellNeck = cellCross * fitAspectRatio, constrained so neither axis
+        // overflows, and centers the board in both axes via contentOffset / crossContentOffset.
+        let cellNeck: CGFloat
+        let cellCross: CGFloat
+        switch configuration.fretSizing {
+        case .fit:
+            let maxNeckFromCross = defaultCellCross * FretSizing.fitAspectRatio
+            let maxNeckFromFill = fretCount > 0 ? neckAxisLength / CGFloat(fretCount) : neckAxisLength
+            cellNeck = min(maxNeckFromCross, maxNeckFromFill)
+            cellCross = cellNeck / FretSizing.fitAspectRatio
+        default:
+            cellNeck = configuration.fretSizing.fretLength(neckAxisLength: neckAxisLength, count: fretCount)
+            cellCross = defaultCellCross
+        }
+
         let totalNeckLength = cellNeck * CGFloat(fretCount)
+        let totalCrossLength = cellCross * CGFloat(stringCount)
 
         let cellWidth: CGFloat
         let cellHeight: CGFloat
@@ -319,7 +338,8 @@ open class FretboardScene: SKScene {
 
         let contentOffset: CGFloat
         switch configuration.fretSizing {
-        case .fit:
+        case .fill:
+            // Fill always spans the full neck axis; no offset needed.
             contentOffset = 0
         default:
             let slack = neckAxisLength - totalNeckLength
@@ -330,6 +350,14 @@ open class FretboardScene: SKScene {
             }
         }
 
+        let crossContentOffset: CGFloat
+        switch configuration.fretSizing {
+        case .fit:
+            crossContentOffset = max((crossAxisLength - totalCrossLength) / 2, 0)
+        default:
+            crossContentOffset = 0
+        }
+
         geometry = FretboardGeometry(
             cellSize: CGSize(width: cellWidth, height: cellHeight),
             stringGutterSize: stringGutterSize,
@@ -337,6 +365,7 @@ open class FretboardScene: SKScene {
             cellNeck: cellNeck,
             cellCross: cellCross,
             contentOffset: contentOffset,
+            crossContentOffset: crossContentOffset,
             direction: direction
         )
 
@@ -374,12 +403,12 @@ open class FretboardScene: SKScene {
             switch direction {
             case .horizontal:
                 let x = stringGutterSize + neckPos
-                path.move(to: CGPoint(x: x, y: fretGutterSize))
-                path.addLine(to: CGPoint(x: x, y: fretGutterSize + crossAxisLength))
+                path.move(to: CGPoint(x: x, y: fretGutterSize + crossContentOffset))
+                path.addLine(to: CGPoint(x: x, y: fretGutterSize + crossContentOffset + totalCrossLength))
             case .vertical:
                 let y = stringGutterSize + neckPos
-                path.move(to: CGPoint(x: fretGutterSize, y: y))
-                path.addLine(to: CGPoint(x: fretGutterSize + crossAxisLength, y: y))
+                path.move(to: CGPoint(x: fretGutterSize + crossContentOffset, y: y))
+                path.addLine(to: CGPoint(x: fretGutterSize + crossContentOffset + totalCrossLength, y: y))
             }
 
             let node = SKShapeNode(path: path)
@@ -405,9 +434,9 @@ open class FretboardScene: SKScene {
             let crossPos = CGFloat(i) * cellCross + cellCross / 2
             switch direction {
             case .horizontal:
-                label.position = CGPoint(x: stringGutterSize / 2, y: fretGutterSize + crossPos)
+                label.position = CGPoint(x: contentOffset + stringGutterSize / 2, y: fretGutterSize + crossContentOffset + crossPos)
             case .vertical:
-                label.position = CGPoint(x: fretGutterSize + crossPos, y: stringGutterSize / 2)
+                label.position = CGPoint(x: fretGutterSize + crossContentOffset + crossPos, y: contentOffset + stringGutterSize / 2)
             }
 
             contentNode.addChild(label)
@@ -433,9 +462,9 @@ open class FretboardScene: SKScene {
             let neckPos = CGFloat(f) * cellNeck + cellNeck / 2 + contentOffset
             switch direction {
             case .horizontal:
-                label.position = CGPoint(x: stringGutterSize + neckPos, y: fretGutterSize / 2)
+                label.position = CGPoint(x: stringGutterSize + neckPos, y: crossContentOffset + fretGutterSize / 2)
             case .vertical:
-                label.position = CGPoint(x: fretGutterSize / 2, y: stringGutterSize + neckPos)
+                label.position = CGPoint(x: crossContentOffset + fretGutterSize / 2, y: stringGutterSize + neckPos)
             }
 
             contentNode.addChild(label)
@@ -769,11 +798,11 @@ open class FretboardScene: SKScene {
                 case .horizontal:
                     node.position = CGPoint(
                         x: geo.stringGutterSize + neckCenter,
-                        y: geo.fretGutterSize + crossOffset
+                        y: geo.fretGutterSize + geo.crossContentOffset + crossOffset
                     )
                 case .vertical:
                     node.position = CGPoint(
-                        x: geo.fretGutterSize + crossOffset,
+                        x: geo.fretGutterSize + geo.crossContentOffset + crossOffset,
                         y: geo.stringGutterSize + neckCenter
                     )
                 }

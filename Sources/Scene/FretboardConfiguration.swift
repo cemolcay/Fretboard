@@ -116,8 +116,8 @@ public struct FretboardConfiguration: Codable, Hashable {
 
     // MARK: - Sizing / layout
 
-    /// How large each fret is along the neck axis. Defaults to `.fit`.
-    public var fretSizing: FretSizing = .fit
+    /// How large each fret is along the neck axis. Defaults to `.fill`.
+    public var fretSizing: FretSizing = .fill
     /// Where to anchor the board when it is smaller than the scene. Defaults to `.center`.
     public var alignment: FretboardAlignment = .center
 
