@@ -83,8 +83,9 @@ final class FretboardTests: XCTestCase {
     func testOpenStringPitchesMatchTuning() {
         let fb = Fretboard(tuning: GuitarTuning.standard, startIndex: 0, count: 5)
         let openNotes = fb.notes.filter { $0.fretIndex == 0 }
-        // orderedStrings (horizontal) = reversed: E4, B3, G3, D3, A2, E2
-        let expectedMIDI = GuitarTuning.standard.strings.reversed().map { $0.midiNoteNumber }
+        // Horizontal not-flipped: orderedStrings = tuning.strings (low E first = bottom of SpriteKit view).
+        // High E ends up visible at the top because SpriteKit's y=0 is at the bottom.
+        let expectedMIDI = GuitarTuning.standard.strings.map { $0.midiNoteNumber }
         XCTAssertEqual(openNotes.map { $0.pitch.midiNoteNumber }, expectedMIDI)
     }
 
@@ -319,5 +320,62 @@ final class FretboardTests: XCTestCase {
         let noteCountBefore = fb.notes.count
         XCTAssertEqual(fb.notes.count, noteCountBefore,
                        "Fretboard.notes (the geometry grid) must not be affected by scene display state")
+    }
+
+    // MARK: - Flip flags
+
+    func testIsStringsFlippedDefaultFalse() {
+        let fb = Fretboard()
+        XCTAssertFalse(fb.isStringsFlipped)
+    }
+
+    func testIsFretsFlippedDefaultFalse() {
+        let fb = Fretboard()
+        XCTAssertFalse(fb.isFretsFlipped)
+    }
+
+    func testIsStringsFlippedReversesStringOrder() {
+        let base = Fretboard(tuning: GuitarTuning.standard, startIndex: 0, count: 1,
+                             direction: .horizontal, isStringsFlipped: false)
+        let flipped = Fretboard(tuning: GuitarTuning.standard, startIndex: 0, count: 1,
+                                direction: .horizontal, isStringsFlipped: true)
+        XCTAssertEqual(base.orderedStrings.map { $0.midiNoteNumber },
+                       flipped.orderedStrings.map { $0.midiNoteNumber }.reversed())
+    }
+
+    func testIsFretsFlippedDoesNotAffectNoteGrid() {
+        // isFretsFlipped is a visual-only transform; the note pitch grid must be identical.
+        let notFlipped = Fretboard(tuning: GuitarTuning.standard, startIndex: 0, count: 12,
+                                   isFretsFlipped: false)
+        let flipped = Fretboard(tuning: GuitarTuning.standard, startIndex: 0, count: 12,
+                                isFretsFlipped: true)
+        XCTAssertEqual(notFlipped.notes.map { $0.pitch.midiNoteNumber }.sorted(),
+                       flipped.notes.map { $0.pitch.midiNoteNumber }.sorted())
+        XCTAssertEqual(notFlipped.notes.count, flipped.notes.count)
+    }
+
+    func testFlipFlagsCodableRoundTrip() throws {
+        let fb = Fretboard(tuning: GuitarTuning.standard, startIndex: 0, count: 7,
+                           direction: .vertical, isStringsFlipped: true, isFretsFlipped: true)
+        let data = try JSONEncoder().encode(fb)
+        let decoded = try JSONDecoder().decode(Fretboard.self, from: data)
+        XCTAssertEqual(decoded.isStringsFlipped, true)
+        XCTAssertEqual(decoded.isFretsFlipped, true)
+        XCTAssertEqual(decoded.direction, .vertical)
+    }
+
+    func testFlipFlagsDefaultsInCodable() throws {
+        // Encode a real Fretboard, strip both flip keys, then re-decode — should default to false.
+        let fb = Fretboard(tuning: GuitarTuning.standard, startIndex: 0, count: 5,
+                           isStringsFlipped: true, isFretsFlipped: true)
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(fb)
+        var dict = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        dict.removeValue(forKey: "isStringsFlipped")
+        dict.removeValue(forKey: "isFretsFlipped")
+        let stripped = try JSONSerialization.data(withJSONObject: dict)
+        let decoded = try JSONDecoder().decode(Fretboard.self, from: stripped)
+        XCTAssertFalse(decoded.isStringsFlipped, "isStringsFlipped should default to false when absent from JSON")
+        XCTAssertFalse(decoded.isFretsFlipped, "isFretsFlipped should default to false when absent from JSON")
     }
 }

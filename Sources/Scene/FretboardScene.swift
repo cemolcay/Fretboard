@@ -42,11 +42,33 @@ private struct FretboardGeometry {
     let contentOffset: CGFloat        // offset along neck axis for alignment
     let crossContentOffset: CGFloat   // offset along cross axis for alignment (e.g. Fit mode)
     let direction: FretboardDirection
+    let fretCount: Int
+    /// Whether the fret axis is rendered in reverse (nut at the high-coordinate end).
+    /// Derived from `fretboard.isFretsFlipped` + `direction` by `layoutContent()`.
+    let neckReversed: Bool
+
+    var totalNeckLength: CGFloat { cellNeck * CGFloat(fretCount) }
+
+    /// Maps a measure along the neck (0 = nut, totalNeckLength = last fret line) to a
+    /// scene coordinate, applying any reversal and the alignment contentOffset.
+    func neckCoordinate(measure: CGFloat) -> CGFloat {
+        let m = neckReversed ? totalNeckLength - measure : measure
+        return m + contentOffset
+    }
 
     /// Scene-space origin of the cell at (stringIndex, fretIndex).
     func origin(string: Int, fret: Int) -> CGPoint {
-        let neckPos = CGFloat(fret) * cellNeck + contentOffset
-        let crossPos = CGFloat(string) * cellCross + crossContentOffset
+        // Derive origin from the cell center so both `origin` and `center` stay consistent.
+        let center = center(string: string, fret: fret)
+        return CGPoint(x: center.x - cellSize.width / 2, y: center.y - cellSize.height / 2)
+    }
+
+    /// Scene-space center of the cell at (stringIndex, fretIndex).
+    func center(string: Int, fret: Int) -> CGPoint {
+        // Place the center of fret `fret` at the midpoint of its neck-axis slot.
+        let neckMeasure = CGFloat(fret) * cellNeck + cellNeck / 2
+        let neckPos = neckCoordinate(measure: neckMeasure)
+        let crossPos = CGFloat(string) * cellCross + cellCross / 2 + crossContentOffset
         switch direction {
         case .horizontal:
             return CGPoint(x: stringGutterSize + neckPos, y: fretGutterSize + crossPos)
@@ -55,35 +77,29 @@ private struct FretboardGeometry {
         }
     }
 
-    /// Scene-space center of the cell at (stringIndex, fretIndex).
-    func center(string: Int, fret: Int) -> CGPoint {
-        let origin = origin(string: string, fret: fret)
-        return CGPoint(x: origin.x + cellSize.width / 2, y: origin.y + cellSize.height / 2)
-    }
-
     /// Returns the (stringIndex, fretIndex) for `point` in content-node space, or `nil` if outside.
     func cell(at point: CGPoint, stringCount: Int, fretCount: Int) -> (string: Int, fret: Int)? {
-        let nx: CGFloat
-        let ny: CGFloat
+        let neckRaw: CGFloat  // raw scene coordinate along the neck axis (no reversal)
+        let crossRaw: CGFloat // raw scene coordinate along the cross axis
         switch direction {
         case .horizontal:
-            nx = point.x - stringGutterSize - contentOffset
-            ny = point.y - fretGutterSize - crossContentOffset
+            neckRaw = point.x - stringGutterSize
+            crossRaw = point.y - fretGutterSize - crossContentOffset
         case .vertical:
-            nx = point.x - fretGutterSize - crossContentOffset
-            ny = point.y - stringGutterSize - contentOffset
+            neckRaw = point.y - stringGutterSize
+            crossRaw = point.x - fretGutterSize - crossContentOffset
         }
 
-        let fret: Int
-        let string: Int
-        switch direction {
-        case .horizontal:
-            fret = Int(nx / cellNeck)
-            string = Int(ny / cellCross)
-        case .vertical:
-            fret = Int(ny / cellNeck)
-            string = Int(nx / cellCross)
+        // Convert the raw neck coordinate to a measure from the nut, accounting for reversal.
+        let measure: CGFloat
+        if neckReversed {
+            measure = totalNeckLength - (neckRaw - contentOffset)
+        } else {
+            measure = neckRaw - contentOffset
         }
+
+        let fret = Int(measure / cellNeck)
+        let string = Int(crossRaw / cellCross)
 
         guard fret >= 0, fret < fretCount, string >= 0, string < stringCount else { return nil }
         return (string: string, fret: fret)
@@ -358,6 +374,14 @@ open class FretboardScene: SKScene {
             crossContentOffset = 0
         }
 
+        // Vertical orientation: leading edge = top, so not-flipped means nut at top → reversed coords.
+        // Horizontal orientation: leading edge = left, not-flipped means nut at left → not reversed.
+        let neckReversed: Bool
+        switch direction {
+        case .horizontal: neckReversed = fretboard.isFretsFlipped
+        case .vertical:   neckReversed = !fretboard.isFretsFlipped
+        }
+
         geometry = FretboardGeometry(
             cellSize: CGSize(width: cellWidth, height: cellHeight),
             stringGutterSize: stringGutterSize,
@@ -366,23 +390,27 @@ open class FretboardScene: SKScene {
             cellCross: cellCross,
             contentOffset: contentOffset,
             crossContentOffset: crossContentOffset,
-            direction: direction
+            direction: direction,
+            fretCount: fretCount,
+            neckReversed: neckReversed
         )
 
         // ── String lines ──────────────────────────────────────────────────────────
+        let geo = geometry!
         for si in 0..<stringCount {
-            let origin = geometry!.origin(string: si, fret: 0)
-            let endOrigin = geometry!.origin(string: si, fret: fretCount - 1)
+            let crossPos = CGFloat(si) * cellCross + cellCross / 2 + crossContentOffset
+            let neckStart = stringGutterSize + geo.neckCoordinate(measure: 0)
+            let neckEnd   = stringGutterSize + geo.neckCoordinate(measure: totalNeckLength)
             let path = CGMutablePath()
             switch direction {
             case .horizontal:
-                let y = origin.y + cellHeight / 2
-                path.move(to: CGPoint(x: stringGutterSize + contentOffset, y: y))
-                path.addLine(to: CGPoint(x: endOrigin.x + cellWidth, y: y))
+                let y = fretGutterSize + crossPos
+                path.move(to: CGPoint(x: min(neckStart, neckEnd), y: y))
+                path.addLine(to: CGPoint(x: max(neckStart, neckEnd), y: y))
             case .vertical:
-                let x = origin.x + cellWidth / 2
-                path.move(to: CGPoint(x: x, y: stringGutterSize + contentOffset))
-                path.addLine(to: CGPoint(x: x, y: endOrigin.y + cellHeight))
+                let x = fretGutterSize + crossPos
+                path.move(to: CGPoint(x: x, y: min(neckStart, neckEnd)))
+                path.addLine(to: CGPoint(x: x, y: max(neckStart, neckEnd)))
             }
             let node = SKShapeNode(path: path)
             node.strokeColor = configuration.stringColor.platformColor
@@ -394,21 +422,20 @@ open class FretboardScene: SKScene {
 
         // ── Fret lines (including nut) ────────────────────────────────────────────
         for fi in 0...fretCount {
-            let isNut = fretboard.startIndex == 0 && fi == 0
+            // The nut is the line at measure 0 when not reversed, or at totalNeckLength when reversed.
+            let isNut = fretboard.startIndex == 0 && fi == (neckReversed ? fretCount : 0)
             let lineWidth = isNut ? configuration.fretWidth * configuration.nutWidthMultiplier : configuration.fretWidth
 
-            let neckPos = CGFloat(fi) * cellNeck + contentOffset
+            let neckPos = stringGutterSize + geo.neckCoordinate(measure: CGFloat(fi) * cellNeck)
             let path = CGMutablePath()
 
             switch direction {
             case .horizontal:
-                let x = stringGutterSize + neckPos
-                path.move(to: CGPoint(x: x, y: fretGutterSize + crossContentOffset))
-                path.addLine(to: CGPoint(x: x, y: fretGutterSize + crossContentOffset + totalCrossLength))
+                path.move(to: CGPoint(x: neckPos, y: fretGutterSize + crossContentOffset))
+                path.addLine(to: CGPoint(x: neckPos, y: fretGutterSize + crossContentOffset + totalCrossLength))
             case .vertical:
-                let y = stringGutterSize + neckPos
-                path.move(to: CGPoint(x: fretGutterSize + crossContentOffset, y: y))
-                path.addLine(to: CGPoint(x: fretGutterSize + crossContentOffset + totalCrossLength, y: y))
+                path.move(to: CGPoint(x: fretGutterSize + crossContentOffset, y: neckPos))
+                path.addLine(to: CGPoint(x: fretGutterSize + crossContentOffset + totalCrossLength, y: neckPos))
             }
 
             let node = SKShapeNode(path: path)
@@ -459,12 +486,12 @@ open class FretboardScene: SKScene {
             label.isHidden = !showFretLabels
             label.zPosition = FretboardZPosition.labels
 
-            let neckPos = CGFloat(f) * cellNeck + cellNeck / 2 + contentOffset
+            let neckPos = stringGutterSize + geo.neckCoordinate(measure: CGFloat(f) * cellNeck + cellNeck / 2)
             switch direction {
             case .horizontal:
-                label.position = CGPoint(x: stringGutterSize + neckPos, y: crossContentOffset + fretGutterSize / 2)
+                label.position = CGPoint(x: neckPos, y: crossContentOffset + fretGutterSize / 2)
             case .vertical:
-                label.position = CGPoint(x: crossContentOffset + fretGutterSize / 2, y: stringGutterSize + neckPos)
+                label.position = CGPoint(x: crossContentOffset + fretGutterSize / 2, y: neckPos)
             }
 
             contentNode.addChild(label)
@@ -787,7 +814,7 @@ open class FretboardScene: SKScene {
             let f = absoluteFret - fretboard.startIndex
             guard f >= 0, f < fretCount else { continue }
 
-            let neckCenter = CGFloat(f) * geo.cellNeck + geo.cellNeck / 2 + geo.contentOffset
+            let neckCenter = geo.neckCoordinate(measure: CGFloat(f) * geo.cellNeck + geo.cellNeck / 2)
 
             func addMarker(crossOffset: CGFloat) {
                 let node = SKShapeNode(circleOfRadius: markerRadius)
@@ -848,7 +875,9 @@ open class FretboardScene: SKScene {
                     .positionY(SKRange(constantValue: halfH)),
                 ]
                 if fretboardCamera.position == .zero {
-                    fretboardCamera.position = CGPoint(x: minX, y: halfH)
+                    // When neck is reversed, nut is at the high-coordinate end → start at maxX.
+                    let startX = (geometry?.neckReversed ?? false) ? maxX : minX
+                    fretboardCamera.position = CGPoint(x: startX, y: halfH)
                 }
             case .vertical:
                 let minY = halfH
@@ -858,7 +887,10 @@ open class FretboardScene: SKScene {
                     .positionY(SKRange(lowerLimit: minY, upperLimit: maxY)),
                 ]
                 if fretboardCamera.position == .zero {
-                    fretboardCamera.position = CGPoint(x: halfW, y: minY)
+                    // When neck is reversed (vertical default), nut is at the top → start at maxY
+                    // so the nut end is visible first.
+                    let startY = (geometry?.neckReversed ?? false) ? maxY : minY
+                    fretboardCamera.position = CGPoint(x: halfW, y: startY)
                 }
             }
         } else {

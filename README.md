@@ -72,11 +72,13 @@ This lets you combine multiple independent marking layers at once — for exampl
 | `startIndex` | `Int` | First fret shown. 0 = open strings. |
 | `count` | `Int` | Number of frets shown. |
 | `direction` | `FretboardDirection` | `.horizontal` or `.vertical`. |
+| `isStringsFlipped` | `Bool` | Reverses string order for the current direction. Default `false`. |
+| `isFretsFlipped` | `Bool` | Reverses the fret/neck axis. Default `false`. |
 | `notes` | `[FretboardNote]` | Read-only computed pitch grid. |
-| `orderedStrings` | `[Pitch]` | Strings in display order (direction-aware). |
+| `orderedStrings` | `[Pitch]` | Strings in display order (direction- and flip-aware). |
 | `octaves` | `[Int]` | Unique octaves currently visible, sorted. |
 
-Mutating any property (`tuning`, `startIndex`, `count`, `direction`) rebuilds the note grid and, if the model is wired to a scene, triggers `scene.reload()` automatically via the `fretboard` `didSet`.
+Mutating any property (`tuning`, `startIndex`, `count`, `direction`, `isStringsFlipped`) rebuilds the note grid and, if the model is wired to a scene, triggers `scene.reload()` automatically via the `fretboard` `didSet`. `isFretsFlipped` is a visual-only transform — changing it requires an explicit `scene.reload()` call.
 
 **Pitch lookup:**
 
@@ -85,10 +87,36 @@ Mutating any property (`tuning`, `startIndex`, `count`, `direction`) rebuilds th
 let positions = fretboard.notes(matching: Pitch(noteName: .a, octave: 2))
 ```
 
+**Flipping the fretboard:**
+
+`isStringsFlipped` reverses the **string order** (cross axis):
+
+```swift
+fretboard.isStringsFlipped = true   // triggers rebuildNotes + scene.reload() automatically
+// Horizontal (default false): high E at top → low E at top when flipped.
+// Vertical  (default false): high E at left → low E at left when flipped.
+```
+
+`isFretsFlipped` reverses the **fret/neck axis** (visual-only — the pitch grid is unchanged):
+
+```swift
+fretboard.isFretsFlipped = true
+scene.reload()   // explicit reload required — isFretsFlipped doesn't rebuild notes
+```
+
+The convention for **not-flipped** is: nut at the *leading* edge.
+
+| Direction | `isFretsFlipped` | Nut position |
+|---|---|---|
+| `.horizontal` | `false` (default) | Left — fret numbers increase left → right |
+| `.horizontal` | `true` | Right — useful for **left-handed players** |
+| `.vertical` | `false` (default) | **Top** — fret 1 visible at the top |
+| `.vertical` | `true` | Bottom — higher frets at the top |
+
 **Persistence:**
 
 ```swift
-let data = try JSONEncoder().encode(fretboard)   // persists tuning/startIndex/count/direction
+let data = try JSONEncoder().encode(fretboard)   // persists tuning/startIndex/count/direction/flip flags
 let loaded = try JSONDecoder().decode(Fretboard.self, from: data)
 scene.fretboard = loaded   // triggers scene.reload() automatically
 ```

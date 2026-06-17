@@ -56,9 +56,22 @@ public final class Fretboard: Codable {
     /// Flipped layout:
     /// - Horizontal: low E at top, high E at bottom.
     /// - Vertical: low E at left, high E at right (standard chord diagram convention).
-    public var isFlipped: Bool {
+    public var isStringsFlipped: Bool {
         didSet { rebuildNotes() }
     }
+
+    /// When `true`, the fret/neck axis is reversed.
+    ///
+    /// Default layout (not flipped) places the nut at the *leading* edge:
+    /// - Horizontal: nut on the left, higher frets to the right.
+    /// - Vertical: nut at the top, higher frets downward (fret 1 visible at the top).
+    ///
+    /// Flipped layout reverses this:
+    /// - Horizontal: nut on the right — useful for left-handed players.
+    /// - Vertical: nut at the bottom, higher frets upward (matches the previous default).
+    ///
+    /// This is a purely visual transform; the underlying note grid is unchanged.
+    public var isFretsFlipped: Bool
 
     /// The computed grid of all fret-note positions. Read-only; rebuilt whenever layout properties change.
     public private(set) var notes: [FretboardNote] = []
@@ -70,20 +83,22 @@ public final class Fretboard: Codable {
         startIndex: Int = 0,
         count: Int = 5,
         direction: FretboardDirection = .horizontal,
-        isFlipped: Bool = false
+        isStringsFlipped: Bool = false,
+        isFretsFlipped: Bool = false
     ) {
         self.tuning = tuning
         self.startIndex = max(0, startIndex)
         self.count = max(1, count)
         self.direction = direction
-        self.isFlipped = isFlipped
+        self.isStringsFlipped = isStringsFlipped
+        self.isFretsFlipped = isFretsFlipped
         rebuildNotes()
     }
 
     // MARK: - Codable
 
     private enum CodingKeys: String, CodingKey {
-        case tuning, startIndex, count, direction, isFlipped
+        case tuning, startIndex, count, direction, isStringsFlipped, isFretsFlipped
     }
 
     public required init(from decoder: Decoder) throws {
@@ -92,7 +107,8 @@ public final class Fretboard: Codable {
         startIndex = try c.decode(Int.self, forKey: .startIndex)
         count = try c.decode(Int.self, forKey: .count)
         direction = try c.decode(FretboardDirection.self, forKey: .direction)
-        isFlipped = try c.decodeIfPresent(Bool.self, forKey: .isFlipped) ?? false
+        isStringsFlipped = try c.decodeIfPresent(Bool.self, forKey: .isStringsFlipped) ?? false
+        isFretsFlipped = try c.decodeIfPresent(Bool.self, forKey: .isFretsFlipped) ?? false
         rebuildNotes()
     }
 
@@ -102,7 +118,8 @@ public final class Fretboard: Codable {
         try c.encode(startIndex, forKey: .startIndex)
         try c.encode(count, forKey: .count)
         try c.encode(direction, forKey: .direction)
-        try c.encode(isFlipped, forKey: .isFlipped)
+        try c.encode(isStringsFlipped, forKey: .isStringsFlipped)
+        try c.encode(isFretsFlipped, forKey: .isFretsFlipped)
     }
 
     // MARK: - Note Grid
@@ -120,9 +137,9 @@ public final class Fretboard: Codable {
     public var orderedStrings: [Pitch] {
         switch direction {
         case .horizontal:
-            return isFlipped ? Array(tuning.strings.reversed()) : tuning.strings
+            return isStringsFlipped ? Array(tuning.strings.reversed()) : tuning.strings
         case .vertical:
-            return isFlipped ? tuning.strings : Array(tuning.strings.reversed())
+            return isStringsFlipped ? tuning.strings : Array(tuning.strings.reversed())
         }
     }
 
